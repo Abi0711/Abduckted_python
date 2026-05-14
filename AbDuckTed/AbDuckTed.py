@@ -640,10 +640,10 @@ def levelProgress():
     global stage
     
     level=[]#represents an individual stage
-    
+    levelPath = "levelLayouts"
     if stage[0] ==0:#if it is the tutorial
         #open file and read line for line
-        for line in open('tutorial.txt'):
+        for line in open(os.path.join(levelPath, 'tutorial.txt')):
             if line.strip() =="stop":#if the line equals stop, the entire stage will be added to levels
                 levels.append(level)
                 level = []#level will be blank, ready to copy another stage
@@ -651,7 +651,7 @@ def levelProgress():
                 level.append(line)#add line to level
                 
     elif stage[0] ==1:#if its the 1st level
-        for line in open('level1.txt'):
+        for line in open(os.path.join(levelPath, 'level1.txt')):
             if line.strip() =="stop":
                 levels.append(level)
                 level = []
@@ -659,7 +659,7 @@ def levelProgress():
                 level.append(line)
                 
     elif stage[0] ==2:#if its the 2nd level
-        for line in open('level2.txt'):
+        for line in open(os.path.join(levelPath, 'level2.txt')):
             if line.strip() =="stop":
                 levels.append(level)
                 level = []
@@ -667,7 +667,7 @@ def levelProgress():
                 level.append(line)
                 
     else:#if the level is a weird number set the player to the first level
-        for line in open('level1.txt'):
+        for line in open(os.path.join(levelPath, 'level1.txt')):
             if line.strip() =="stop":
                 levels.append(level)
                 level = []
@@ -751,7 +751,6 @@ def Button(msg, x, y, w, h, a, ia, loop,action=None):
 #function will run when the player loses all life
 #user will get the choice to restart the game or quit
 def lose():
-    
     go = True
     while go:
         for event in pygame.event.get():
