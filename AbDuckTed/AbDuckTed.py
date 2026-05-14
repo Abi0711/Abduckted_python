@@ -36,17 +36,33 @@ stage = [0,0]#keeps track of the current level and stage the player is on
 global txt
 txt=False
 
+soundEffectsFolder = "soundEffects"
+
+spriteFolder = "sprites"
+collectiblesFolder = "collectibles"
+healthUpFolder = "healthUp"
+keyAndLockFolder = "keyAndLock"
+enemyFolder = "enemy"
+playerFolder = "ted"
+teleporterFolder = "teleporter"
+
+backgroundImageFolder = "background"
+
+endSlidesFolder = "endSlides"
+
+openingSlidesFolder = "openingSlides"
+
 
 #initialise some of the sprites that will be used 
-rDuck = pygame.image.load("rDuck.png").convert_alpha()
+rDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rDuck.png")).convert_alpha()
 rDuck= pygame.transform.scale(rDuck, (44,44))
-key1 = pygame.image.load("keyFrag1.png").convert_alpha()
-key2 = pygame.image.load("keyFrag2.png").convert_alpha()
-bossKey = pygame.image.load("bossKey.png").convert_alpha()
-blueKey = pygame.image.load("blueKey.png").convert_alpha()
-bread = pygame.image.load("bread.png").convert_alpha()
-backgroundImage = pygame.image.load("level1Back.png").convert_alpha()
-level2 = pygame.image.load("level2Back.png").convert_alpha()
+key1 = pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "keyFrag1.png")).convert_alpha()
+key2 = pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "keyFrag2.png")).convert_alpha()
+bossKey = pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "bossKey.png")).convert_alpha()
+blueKey = pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "blueKey.png")).convert_alpha()
+bread = pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, healthUpFolder, "bread.png")).convert_alpha()
+backgroundImage = pygame.image.load(os.path.join(backgroundImageFolder, "level1Back.png")).convert_alpha()
+level2 = pygame.image.load(os.path.join(backgroundImageFolder, "level2Back.png")).convert_alpha()
 
 #initialise colours
 green = (0,200,0)
@@ -59,28 +75,29 @@ white = (255,255,255)
 black = (0,0,0)
 
 #initialise the music and sound effects to be used 
-jump = pygame.mixer.Sound("jumpP.wav")
-hit = pygame.mixer.Sound("quack.wav")
-shoot = pygame.mixer.Sound("shoot.wav")
-teleport = pygame.mixer.Sound("teleporter.wav")
-heal = pygame.mixer.Sound("healthUp.wav")
+
+jump = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "jumpP.wav"))
+hit = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "quack.wav"))
+shoot = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "shoot.wav"))
+teleport = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "teleporter.wav"))
+heal = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "healthUp.wav"))
 
 
 #main player class
 class PlayerSprite(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        #initialise different sprotes to be used for animation
+        #initialise different sprites to be used for animation
         global rDuck
         self.rDuck = rDuck
-        self.lDuck = pygame.image.load("lDuck.png").convert_alpha()
-        self.rShoot = pygame.image.load("rShoot.png").convert_alpha()
-        self.lShoot = pygame.image.load("lShoot.png").convert_alpha()
-        self.rSpaceShoot = pygame.image.load("rSpaceShoot.png").convert_alpha()
-        self.lSpaceShoot = pygame.image.load("lSpaceShoot.png").convert_alpha()
-        self.rSpace = pygame.image.load("rSpace.png").convert_alpha()
-        self.lSpace = pygame.image.load("lSpace.png").convert_alpha()
-        
+        self.lDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lDuck.png")).convert_alpha()
+        self.rShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rShoot.png")).convert_alpha()
+        self.lShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lShoot.png")).convert_alpha()
+        self.rSpaceShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rSpaceShoot.png")).convert_alpha()
+        self.lSpaceShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lSpaceShoot.png")).convert_alpha()
+        self.rSpace = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rSpace.png")).convert_alpha()
+        self.lSpace = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lSpace.png")).convert_alpha()
+                
         self.image = self.rDuck
         self.image.set_colorkey([255,255,255])
         self.image = pygame.transform.scale(self.image, (44,44))
@@ -245,10 +262,10 @@ class Enemy(pygame.sprite.Sprite):
         self.mode=mode#mode = easy or medium
         self.health = health#health of the enemy
         #sprites to load in
-        self.rEasy = pygame.image.load("rEasy.png").convert_alpha()
-        self.lEasy = pygame.image.load("lEasy.png").convert_alpha()
-        self.rMedium = pygame.image.load("rMedium.png").convert_alpha()
-        self.lMedium = pygame.image.load("lMedium.png").convert_alpha()
+        self.rEasy = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rEasy.png")).convert_alpha()
+        self.lEasy = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lEasy.png")).convert_alpha()
+        self.rMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rMedium.png")).convert_alpha()
+        self.lMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lMedium.png")).convert_alpha()
         #if the enemy is an easy enemy
         if mode=="easy":
             #image will be of the original weasel
@@ -324,12 +341,12 @@ class Boss(pygame.sprite.Sprite):
 
         self.shootLoop = 1#allows for a break in the bosses shots
         #load in sprites
-        self.lMedium = pygame.image.load("lMedium.png").convert_alpha()
-        self.rMedium = pygame.image.load("rMedium.png").convert_alpha()
-        self.lBoss = pygame.image.load("lBoss.png").convert_alpha()
-        self.rBoss = pygame.image.load("rBoss.png").convert_alpha()
-        self.lBossFinal = pygame.image.load("lBossFinal.png").convert_alpha()
-        self.rBossFinal = pygame.image.load("rBossFinal.png").convert_alpha()
+        self.lMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lMedium.png")).convert_alpha()
+        self.rMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rMedium.png")).convert_alpha()
+        self.lBoss = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lBoss.png")).convert_alpha()
+        self.rBoss = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rBoss.png")).convert_alpha()
+        self.lBossFinal = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lBossFinal.png")).convert_alpha()
+        self.rBossFinal = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rBossFinal.png")).convert_alpha()
         #if the type of boss is a miniboss or a boss
         if mode == "boss":
             self.vel = 2#velocity represents the amount in pixels that the enemy will move
@@ -437,7 +454,7 @@ class Spike(object):
     def __init__ (self, x, y):
         self.x = x#x coord
         self.y = y#y coord
-        self.image = pygame.image.load("spikes.png").convert_alpha()#load in sprite
+        self.image = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "spikes.png")).convert_alpha()#load in sprite
         self.rect = pygame.Rect(x, y, 30, 4)#spikes rectangle
 
     #draw the spike to the screen
@@ -451,7 +468,7 @@ class Interactive(object):
         self.x=x#x coord
         self.y=y#y coord
         self.locked = False#if the interactive is locked 
-        self.image = pygame.image.load("lock.png").convert_alpha()#load in sprite
+        self.image = pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "lock.png")).convert_alpha()#load in sprite
         self.rect = pygame.Rect(x, y, 30, 30)#make the rectangle that the sprite is
     #method that is executed when the player interacts with the interactive
     def interact(self):
@@ -498,9 +515,9 @@ class Teleporter(object):
         self.x=x#x coord
         self.y=y#y coord
         if direction =="up":# if it is a teleporter going up
-            self.image = pygame.image.load("up.png").convert_alpha()
+            self.image = pygame.image.load(os.path.join(spriteFolder, teleporterFolder, "up.png")).convert_alpha()
         if direction =="down":# if it is a teleporter going down image is a different sprite
-            self.image = pygame.image.load("down.png").convert_alpha()
+            self.image = pygame.image.load(os.path.join(spriteFolder, teleporterFolder, "down.png")).convert_alpha()
 
     def draw(self,screen):
         screen.blit(self.image, (self.x,self.y))#draw image at (x,y) to the screen
@@ -623,10 +640,10 @@ def levelProgress():
     global stage
     
     level=[]#represents an individual stage
-    
+    levelPath = "levelLayouts"
     if stage[0] ==0:#if it is the tutorial
         #open file and read line for line
-        for line in open('tutorial.txt'):
+        for line in open(os.path.join(levelPath, 'tutorial.txt')):
             if line.strip() =="stop":#if the line equals stop, the entire stage will be added to levels
                 levels.append(level)
                 level = []#level will be blank, ready to copy another stage
@@ -634,7 +651,7 @@ def levelProgress():
                 level.append(line)#add line to level
                 
     elif stage[0] ==1:#if its the 1st level
-        for line in open('level1.txt'):
+        for line in open(os.path.join(levelPath, 'level1.txt')):
             if line.strip() =="stop":
                 levels.append(level)
                 level = []
@@ -642,7 +659,7 @@ def levelProgress():
                 level.append(line)
                 
     elif stage[0] ==2:#if its the 2nd level
-        for line in open('level2.txt'):
+        for line in open(os.path.join(levelPath, 'level2.txt')):
             if line.strip() =="stop":
                 levels.append(level)
                 level = []
@@ -650,7 +667,7 @@ def levelProgress():
                 level.append(line)
                 
     else:#if the level is a weird number set the player to the first level
-        for line in open('level1.txt'):
+        for line in open(os.path.join(levelPath, 'level1.txt')):
             if line.strip() =="stop":
                 levels.append(level)
                 level = []
@@ -734,7 +751,6 @@ def Button(msg, x, y, w, h, a, ia, loop,action=None):
 #function will run when the player loses all life
 #user will get the choice to restart the game or quit
 def lose():
-    
     go = True
     while go:
         for event in pygame.event.get():
@@ -811,12 +827,12 @@ def gameNew():
     s=0#number of slides
     largeText =pygame.font.SysFont("berlinsansfb", 20)
     #load in pictures
-    mapGame = pygame.image.load("map.png").convert_alpha()
-    s0 = pygame.image.load("slide0.png").convert_alpha()
-    s1 = pygame.image.load("slide1.png").convert_alpha()
-    s2 = pygame.image.load("slide2.png").convert_alpha()
+    mapGame = pygame.image.load(os.path.join(spriteFolder, "map.png")).convert_alpha()
+    s0 = pygame.image.load(os.path.join(openingSlidesFolder, "slide0.png")).convert_alpha()
+    s1 = pygame.image.load(os.path.join(openingSlidesFolder, "slide1.png")).convert_alpha()
+    s2 = pygame.image.load(os.path.join(openingSlidesFolder, "slide2.png")).convert_alpha()
     #start music
-    pygame.mixer.music.load("happy.wav")
+    pygame.mixer.music.load(os.path.join(soundEffectsFolder, "happy.wav"))
     pygame.mixer.music.play(-1)
     
     while go:
@@ -862,7 +878,7 @@ def gameNew():
         if s==1:
             screen.blit(s1,(0,0))
         if s==1 and i==2500:
-            pygame.mixer.music.load("punch.wav")
+            pygame.mixer.music.load(os.path.join(soundEffectsFolder, "punch.wav"))
             pygame.mixer.music.play(1)
         if s==2:
             screen.blit(s2,(0,0))
@@ -879,7 +895,7 @@ def gameNew():
             screen.blit(text_surface, text_rect)
             
         if s==5 and i==2000:
-            pygame.mixer.music.load("punch.wav")
+            pygame.mixer.music.load(os.path.join(soundEffectsFolder, "punch.wav"))
             pygame.mixer.music.play(1)
         if s==5:
             screen.fill(black)
@@ -944,18 +960,18 @@ def finishGame():
     s=0#number of slides
     largeText =pygame.font.SysFont("berlinsansfb", 30)
 
-    s1 = pygame.image.load("last1.png").convert_alpha()
-    s2 = pygame.image.load("last2.png").convert_alpha()
-    s3 = pygame.image.load("last3.png").convert_alpha()
-    s4 = pygame.image.load("last4.png").convert_alpha()
-    s5 = pygame.image.load("last5.png").convert_alpha()
-    s6 = pygame.image.load("last6.png").convert_alpha()
-    s7 = pygame.image.load("last7.png").convert_alpha()
-    s8 = pygame.image.load("last8.png").convert_alpha()
-    s9 = pygame.image.load("last9.png").convert_alpha()
-    s10 = pygame.image.load("last10.png").convert_alpha()
+    s1 = pygame.image.load(os.path.join(endSlidesFolder, "last1.png")).convert_alpha()
+    s2 = pygame.image.load(os.path.join(endSlidesFolder, "last2.png")).convert_alpha()
+    s3 = pygame.image.load(os.path.join(endSlidesFolder, "last3.png")).convert_alpha()
+    s4 = pygame.image.load(os.path.join(endSlidesFolder, "last4.png")).convert_alpha()
+    s5 = pygame.image.load(os.path.join(endSlidesFolder, "last5.png")).convert_alpha()
+    s6 = pygame.image.load(os.path.join(endSlidesFolder, "last6.png")).convert_alpha()
+    s7 = pygame.image.load(os.path.join(endSlidesFolder, "last7.png")).convert_alpha()
+    s8 = pygame.image.load(os.path.join(endSlidesFolder, "last8.png")).convert_alpha()
+    s9 = pygame.image.load(os.path.join(endSlidesFolder, "last9.png")).convert_alpha()
+    s10 = pygame.image.load(os.path.join(endSlidesFolder, "last10.png")).convert_alpha()
     #loads music in
-    pygame.mixer.music.load("victory.wav")
+    pygame.mixer.music.load(os.path.join(soundEffectsFolder, "victory.wav"))
     # the -1 is the loops, so here it is infinite
     pygame.mixer.music.play(-1)
     while go:
@@ -1196,7 +1212,7 @@ def game():
     levelProgress()#read from the textfile what level the player is on
     readLevels()#read the stages
     #loads music in
-    pygame.mixer.music.load("music.mp3")
+    pygame.mixer.music.load(os.path.join(soundEffectsFolder, "music.mp3"))
     # the -1 is the loops, so here it is infinite
     pygame.mixer.music.play(-1)
     
