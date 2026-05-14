@@ -59,11 +59,12 @@ white = (255,255,255)
 black = (0,0,0)
 
 #initialise the music and sound effects to be used 
-jump = pygame.mixer.Sound("jumpP.wav")
-hit = pygame.mixer.Sound("quack.wav")
-shoot = pygame.mixer.Sound("shoot.wav")
-teleport = pygame.mixer.Sound("teleporter.wav")
-heal = pygame.mixer.Sound("healthUp.wav")
+soundEffectsFolder = "soundEffects"
+jump = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "jumpP.wav"))
+hit = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "quack.wav"))
+shoot = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "shoot.wav"))
+teleport = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "teleporter.wav"))
+heal = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "healthUp.wav"))
 
 
 #main player class
@@ -816,7 +817,7 @@ def gameNew():
     s1 = pygame.image.load("slide1.png").convert_alpha()
     s2 = pygame.image.load("slide2.png").convert_alpha()
     #start music
-    pygame.mixer.music.load("happy.wav")
+    pygame.mixer.music.load(os.path.join(soundEffectsFolder, "happy.wav"))
     pygame.mixer.music.play(-1)
     
     while go:
@@ -862,7 +863,7 @@ def gameNew():
         if s==1:
             screen.blit(s1,(0,0))
         if s==1 and i==2500:
-            pygame.mixer.music.load("punch.wav")
+            pygame.mixer.music.load(os.path.join(soundEffectsFolder, "punch.wav"))
             pygame.mixer.music.play(1)
         if s==2:
             screen.blit(s2,(0,0))
@@ -879,7 +880,7 @@ def gameNew():
             screen.blit(text_surface, text_rect)
             
         if s==5 and i==2000:
-            pygame.mixer.music.load("punch.wav")
+            pygame.mixer.music.load(os.path.join(soundEffectsFolder, "punch.wav"))
             pygame.mixer.music.play(1)
         if s==5:
             screen.fill(black)
@@ -955,7 +956,7 @@ def finishGame():
     s9 = pygame.image.load("last9.png").convert_alpha()
     s10 = pygame.image.load("last10.png").convert_alpha()
     #loads music in
-    pygame.mixer.music.load("victory.wav")
+    pygame.mixer.music.load(os.path.join(soundEffectsFolder, "victory.wav"))
     # the -1 is the loops, so here it is infinite
     pygame.mixer.music.play(-1)
     while go:
@@ -1196,7 +1197,7 @@ def game():
     levelProgress()#read from the textfile what level the player is on
     readLevels()#read the stages
     #loads music in
-    pygame.mixer.music.load("music.mp3")
+    pygame.mixer.music.load(os.path.join(soundEffectsFolder, "music.mp3"))
     # the -1 is the loops, so here it is infinite
     pygame.mixer.music.play(-1)
     
