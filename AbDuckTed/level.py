@@ -4,6 +4,8 @@ import enemy as Enemy
 import healthUp as HealthUp
 import teleporter as Teleporter
 import teleporterType as TeleporterType
+import interactive as Interactive
+import boss as Boss
 
 class Level:
     def __init__(self):
@@ -35,6 +37,12 @@ class Level:
             self.teleDown.append(Teleporter(x, y, direction))
         else:
             self.teleUp.append(Teleporter(x, y, direction))
+
+    def addInteractive(self, interactive):
+        self.interactive.append(interactive)
+    
+    def addBoss(self, x, y, width, height, end, health, mode):
+        self.addBoss(Boss(x, y, width, height, end, health, mode))
 
 
         

@@ -13,7 +13,8 @@ soundEffectsFolder = "soundEffects"
 
 hit = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "quack.wav"))
 heal = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "healthUp.wav"))
-
+rDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rDuck.png")).convert_alpha()
+rDuck= pygame.transform.scale(rDuck, (44,44))
 
 #main player class
 class PlayerSprite(pygame.sprite.Sprite):
@@ -165,7 +166,7 @@ class PlayerSprite(pygame.sprite.Sprite):
             if self.rect.y<f.y+30 and self.rect.y+44>f.y:
                 if self.rect.x+44>f.x-10 and self.rect.x<f.x+40:
                     if user_input[pygame.K_e]:#if the user pressed e
-                        f.interact()#interact with object
+                        f.interact(level.interactive)#interact with object
                 
             if self.rect.colliderect(f.rect):
                 
