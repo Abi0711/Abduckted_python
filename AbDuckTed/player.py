@@ -155,7 +155,7 @@ class PlayerSprite(pygame.sprite.Sprite):
             if self.rect.colliderect(h.rect):
                 self.heal.play()
                 self.healthChange(1)
-                level.ups.pop(level.ups.index(h))     
+                level.ups.remove(h)    
         pygame.event.pump()
         user_input = pygame.key.get_pressed()#get the key pressed by the user
         #same code as walls except with the interactives rect instead
