@@ -51,7 +51,7 @@ class Boss(pygame.sprite.Sprite):
         
     def draw(self, screen, player_x):
         self.move()
-        if self.mode=="boss":#mini boss should always face to the left
+        if self.mode==BossType.MINIBOSS:#mini boss should always face to the left
             self.image = self.lMedium
         else:
             if player_x > self.x:#if the player is to the right of the boss
