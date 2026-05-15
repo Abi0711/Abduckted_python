@@ -1,9 +1,12 @@
 import os
 import random
 import pygame
+import player as PlayerSprite
+import level as Level
+import teleporterType as TeleporterType
+import enemyType as EnemyType
 import time
 import re
-
 
 #start pygame
 os.environ["SDL_VIDEO_CENTERED"]="1"
@@ -18,16 +21,16 @@ screen = pygame.display.set_mode((width,height))
 clock = pygame.time.Clock()
 
 #initialise arrays that will keep track of what is on the screen
-bullets = []#keeps the players bullets
-eBullets = []#keeps the enemies bullets
-enemies = []#keeps the enemies 
-boss = []#keeps the bosses
-walls=[]#keeps the track of the walls that are drawn on screen
-spikes = []#keeps the spikes
-ups = []#keeps the 1-ups on screen
-teleUp = []#keeps the teleporters going up
-teleDown = []#keeps the teleporters going down
-interactive = []#keeps the interactives
+# bullets = []#keeps the players bullets
+# eBullets = []#keeps the enemies bullets
+# enemies = []#keeps the enemies 
+# boss = []#keeps the bosses
+# walls=[]#keeps the track of the walls that are drawn on screen
+# spikes = []#keeps the spikes
+# ups = []#keeps the 1-ups on screen
+# teleUp = []#keeps the teleporters going up
+# teleDown = []#keeps the teleporters going down
+# interactive = []#keeps the interactives
 
 levels=[[]]#holds the level layout
 stage = [0,0]#keeps track of the current level and stage the player is on
@@ -76,252 +79,10 @@ black = (0,0,0)
 
 #initialise the music and sound effects to be used 
 
-jump = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "jumpP.wav"))
-hit = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "quack.wav"))
-shoot = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "shoot.wav"))
+
 teleport = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "teleporter.wav"))
-heal = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "healthUp.wav"))
-
-
-#main player class
-class PlayerSprite(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        #initialise different sprites to be used for animation
-        global rDuck
-        self.rDuck = rDuck
-        self.lDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lDuck.png")).convert_alpha()
-        self.rShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rShoot.png")).convert_alpha()
-        self.lShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lShoot.png")).convert_alpha()
-        self.rSpaceShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rSpaceShoot.png")).convert_alpha()
-        self.lSpaceShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lSpaceShoot.png")).convert_alpha()
-        self.rSpace = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rSpace.png")).convert_alpha()
-        self.lSpace = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lSpace.png")).convert_alpha()
-                
-        self.image = self.rDuck
-        self.image.set_colorkey([255,255,255])
-        self.image = pygame.transform.scale(self.image, (44,44))
-        self.rect = self.image.get_rect()
-    
-        self.shoot = False #boolean that represents whether the player is currently shooting
-        self.space = False #boolean that represents whether the player is in space/the 2nd level
-        self.left = False #boolean that represents whether the player is currently facing left
-        self.isJump = False #boolean that represents whether the player is jumping
-        
-
-        #keys that the player can obtain
-        self.bossKey = False
-        self.keyFrag1 = False
-        self.keyFrag2 = False
-        self.blueKey =False
-        
-        self.hitLoop = 0 # loop that allows the player to have a grace period between hits
-        self.health = 10#player's health
-        self.jumpCount = 8 # if the player jumps jumpCount will decrease to make the arc of the jump
-
-    #method that sets the position of the player at position (x,y)
-    def setPos(self, x, y):
-        self.rect = pygame.Rect(x, y, 44, 44)
-        
-    #method that changes the players health by adding change
-    def healthChange(self, change):
-        if change<0 and self.hitLoop==0:
-            hit.play()
-            self.hitLoop=1
-            self.health += change
-        if change>0:
-            self.health += change
-        
-    #method that adds a key to the player
-    def addKey(self, key):
-        if key=="frag1":
-            self.keyFrag1=True#1st key fragment has been obtained
-            if self.keyFrag2 and self.keyFrag1:#if both key fragments have been obtained create the boss Key
-                    self.bossKey = True
-                    self.keyFrag1=False
-                    self.keyFrag2=False
-        elif key == "frag2":#2nd key fragment has been obtained
-            self.keyFrag2=True
-            if self.keyFrag2 and self.keyFrag1:#if both key fragments have been obtained create the boss Key
-                self.bossKey = True
-                self.keyFrag1=False
-                self.keyFrag2=False
-        else:
-            self.blueKey=True#blue key has been obtained
-            
-    #method that changes the different sprites of the player
-    def change(self):
-        
-        #if the player is in space show the sprite that has the helmet on
-        if self.space:
-            #if it is level 2 the duck will have a space suit on
-            if self.left:
-                #if the player is going left
-                if self.shoot:
-                    #if the player has shot
-                    self.image = self.lSpaceShoot
-                else:
-                    self.image = self.lSpace
-            else:
-                #if the player is going right
-                if self.shoot:
-                    self.image = self.rSpaceShoot 
-                else:
-                    self.image = self.rSpace
-        else:
-            #if it is the tutorial or level 1 the player won't have the space suit on
-            if self.left:
-                if self.shoot:
-                    self.image = self.lShoot
-                else:
-                    self.image = self.lDuck
-            else:
-                if self.shoot:
-                    self.image = self.rShoot
-
-                else:
-                    self.image = self.rDuck
-        self.image.set_colorkey([255,255,255])
-        self.image = pygame.transform.scale(self.image, (44,44))#sets the image to 44x44 pixels
-    #method that moves the player 
-    def move(self,dx,dy):
-        if dx!=0:
-            self.move_single_axis(dx,0)
-        if dy!=0:
-            self.move_single_axis(0,dy)
-
-    #method that moves the player in a direction with a collision detection for walls, spikes and the interactives
-    def move_single_axis(self, dx, dy):
-        self.rect.x +=dx
-        self.rect.y +=dy
-        #collsion with walls
-        for wall in walls:
-            if self.rect.colliderect(wall.rect):
-                if dx > 0:#Moving right, collide with left side of wall
-                    self.rect.right = wall.rect.left
-                if dx < 0:#moving left, collide with right side of wall
-                    self.rect.left = wall.rect.right
-                if dy > 0:#Moving down, collide with top of wall
-                    self.rect.bottom = wall.rect.top
-                if dy < 0:#moving up, collide with the bottom of the wall
-                    self.rect.top = wall.rect.bottom
-
-        #collsion with spikes
-        for s in spikes:
-            if self.rect.colliderect(s.rect):
-                if dx > 0:#Moving right, collide with left side of spike
-                    self.rect.right = s.rect.left
-                if dx < 0:#moving left, collide with right side of spike
-                    self.rect.left = s.rect.right
-                if dy > 0:#Moving down, collide with top of spike
-                    self.rect.bottom = s.rect.top
-                if dy < 0:#moving up, collide with the bottom of the spike
-                    self.rect.top = s.rect.bottom
-                self.healthChange(-1)
-        #same code as walls except with the health rect instead
-        for h in ups:
-            if self.rect.colliderect(h.rect):
-                heal.play()
-                self.healthChange(1)
-                ups.pop(ups.index(h))     
-        pygame.event.pump()
-        user_input = pygame.key.get_pressed()#get the key pressed by the user
-        #same code as walls except with the interactives rect instead
-        for f in interactive:
-            #allows player to be 10 pixels away from the interactive and still be able to interact with it
-            
-            if player.rect.y<f.y+30 and player.rect.y+44>f.y:
-                if player.rect.x+44>f.x-10 and player.rect.x<f.x+40:
-                    if user_input[pygame.K_e]:#if the user pressed e
-                        f.interact()#interact with object
-                
-            if self.rect.colliderect(f.rect):
-                
-                if dx > 0:#Moving right, collide with left side of spike
-                    self.rect.right = f.rect.left
-                if dx < 0:#moving left, collide with right side of spike
-                    self.rect.left = f.rect.right
-                if dy > 0:#Moving down, collide with top of spike
-                    self.rect.bottom = f.rect.top
-                if dy < 0:#moving up, collide with the bottom of the spike
-                    self.rect.top = f.rect.bottom
-                if user_input[pygame.K_e]:#if the user pressed e
-                    f.interact()#interact with object
-
-
-#Enemy class
-class Enemy(pygame.sprite.Sprite):
-    
-    def __init__ (self,x,y,width,height,end, health, mode):
-        self.x = x#x coordinate the player will be at
-        self.y=y#y coordinate the player will be at
-        self.width = width #width of sprite
-        self.height = height#height of sprite
-        self.end = end#end of sprite walking path
-        self.path = [self.x,self.end]#boundaries of where the enemy can walk
-        self.mode=mode#mode = easy or medium
-        self.health = health#health of the enemy
-        #sprites to load in
-        self.rEasy = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rEasy.png")).convert_alpha()
-        self.lEasy = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lEasy.png")).convert_alpha()
-        self.rMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rMedium.png")).convert_alpha()
-        self.lMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lMedium.png")).convert_alpha()
-        #if the enemy is an easy enemy
-        if mode=="easy":
-            #image will be of the original weasel
-            self.image = self.rEasy
-            #the speed at which the enemy moves is faster than the police weasel
-            self.vel = 3
-        else:
-            #image will be of the police weasel
-            self.image = self.rMedium
-            #speed is slower than the ordinary weasel
-            self.vel = 2
-        self.image.set_colorkey([255,255,255])
-        self.image = pygame.transform.scale(self.image, (self.width,self.height))#scale the image to the preferred width and height
-        self.rect = self.image.get_rect()
-    #method that draws the enemy on screen
-    def draw(self, screen):
-        self.move()
-        if self.vel>0:
-            #if the velocity is greater than 0 it means that the player is moving to the right
-            #if the type of weasel is easy it will display the ordinary weasel facing the right
-            if self.mode=="easy":
-                self.image = self.rEasy               
-            else:
-                self.image = self.rMedium
-        else:
-            #if the weasel is moving to the left display the appropriate sprites
-            if self.mode=="easy":
-                self.image = self.lEasy                
-            else:
-                self.image = self.lMedium
-        self.image.set_colorkey([255,255,255])
-        self.image = pygame.transform.scale(self.image, (self.width,self.height))#scale the image to the preferred width and height
-        screen.blit(self.image, (self.x, self.y))#draw enemy at coordinate (x,y)
-    #method that hurts the enemy
-    def hit(self):
-        self.health-=1#health minus 1
-
-    #method that moves the enemy
-    def move(self):
-        if self.vel>0:
-            #if the enemy is moving right
-            if self.x+ self.vel<self.path[1]:
-                #if the enemy hasn't reached the end of their path then keep on moving right
-                self.x += self.vel
-            else:
-                #changes direction
-                #will minus pixels from x coord making it move left
-                self.vel = self.vel * -1
-        else:
-            #if the enemy is moving left
-            if self.x-self.vel>self.path[0]:
-                #if the enemy hasn't walked back to the start of their path then keep moving left
-                self.x += self.vel
-            else:
-                #changes direction
-                self.vel = self.vel * -1
+jump = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "jumpP.wav"))
+shoot = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "shoot.wav"))
 
 
 #boss class
@@ -424,28 +185,28 @@ class Projectile(object):
         #if negative then it moves to the left
         #if positive it moves to the right
 
-    def draw(self, screen):
+    def draw(self, screen, level):
         if self.x<630 and self.x>30:
             self.x += self.vel#if the bullet is within the boundaries of the screen keep it moving                        
         else:#if the bullet is outside of the screen
-            if self in bullets:#if the bullet belongs to the player
+            if self in level.bullets:#if the bullet belongs to the player
                 #delete the bullet from the screen
-                bullets.pop(bullets.index(self))
-            if self in eBullets:
+                level.bullets.pop(level.bullets.index(self))
+            if self in level.eBullets:
                 #delete the bullet from the screen
-                eBullets.pop(eBullets.index(self))
+                level.eBullets.pop(level.eBullets.index(self))
 
         #collision with walls
-        for w in walls:
+        for w in level.walls:
             if self.y-self.radius<w.rect.y+30 and self.y+self.radius>w.rect.y:
                 if self.x+self.radius>w.rect.x and self.x-self.radius<w.rect.x+30:
                     #if the bullet collides with a wall delete it
-                    if self in bullets:#if the bullet belongs to the player
+                    if self in level.bullets:#if the bullet belongs to the player
                         #delete the bullet from the screen
-                        bullets.pop(bullets.index(self))
-                    if self in eBullets:
+                        level.bullets.pop(level.bullets.index(self))
+                    if self in level.eBullets:
                         #delete the bullet from the screen
-                        eBullets.pop(eBullets.index(self))
+                        level.eBullets.pop(level.Bullets.index(self))
         
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)#draw the circle to the screen
 
@@ -471,7 +232,7 @@ class Interactive(object):
         self.image = pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "lock.png")).convert_alpha()#load in sprite
         self.rect = pygame.Rect(x, y, 30, 30)#make the rectangle that the sprite is
     #method that is executed when the player interacts with the interactive
-    def interact(self):
+    def interact(self, interactive):
         global txt#access the global variable txt
         
         if stage[1]==0 and stage [0] ==1 and player.blueKey:#if the player has a blue key and it is the 1st stage in level 1
@@ -679,16 +440,17 @@ def readLevels():
     x=y=0
     
     temp = levels[stage[1]]#read the current stage the player is at
-    
+    level = Level()
     for row in temp:
         #for each row in the level
         for col in row:
             #for individual letters consisting in the rows
             if col == "W":#add a wall
-                Wall(x,y)
+                level.addWall(x, y)
                 
             if col == "E":#add a police weasel
-                e = Enemy(x,y-10, 32,40,x+(30*4), 5, "medium")
+                level.addEnemy(x,y-10, 32,40,x+(30*4), 5, "medium")
+                e = Enemy()
                 enemies.append(e)#add to array holding basic enemies
                 
             if col == "e":#add an ordinary weasel
@@ -726,6 +488,7 @@ def readLevels():
             x+= 30 #add 30pixels to x so the entities are different coordinates, reads from left to right
         y+=30#add 30 pixels to work downwards from screen, reads from top to bottom
         x=0
+        return level
         
 
 #Creates a button
