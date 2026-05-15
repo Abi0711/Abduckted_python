@@ -5,6 +5,7 @@ import healthUp as HealthUp
 import teleporter as Teleporter
 import teleporterType as TeleporterType
 import interactive as Interactive
+import projectile as Projectile
 import boss as Boss
 
 class Level:
@@ -32,6 +33,12 @@ class Level:
     def addHealthUp(self, x, y):
         self.ups.append(HealthUp(x, y))
     
+    def addEnemyProjectile(self, x, y, radius, color, facing):
+        self.eBullets.append(Projectile(x, y, radius, color, facing))
+    
+    def addProjectile(self, x, y, radius, color, facing):
+        self.bullets.append(Projectile(x, y, radius, color, facing))
+
     def addTeleporter(self, x, y, direction):
         if direction == TeleporterType.DOWN:
             self.teleDown.append(Teleporter(x, y, direction))
@@ -43,6 +50,17 @@ class Level:
     
     def addBoss(self, x, y, width, height, end, health, mode):
         self.addBoss(Boss(x, y, width, height, end, health, mode))
-
+    
+    def resetLevel(self):
+        del self.walls[:]
+        del self.spikes[:]
+        del self.enemies[:]
+        del self.interactive[:]
+        del self.ups[:]
+        del self.teleUp[:]
+        del self.teleDown[:]
+        del self.eBullets[:]
+        del self.boss[:]
+    
 
         
