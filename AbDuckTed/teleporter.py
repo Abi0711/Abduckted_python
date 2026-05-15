@@ -1,6 +1,7 @@
 import os
 import pygame
-import teleporterType as TeleporterType
+from teleporterType import TeleporterType
+
 spriteFolder = "sprites"
 teleporterFolder = "teleporter"
 #Creates teleporters

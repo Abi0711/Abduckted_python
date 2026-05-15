@@ -1,11 +1,12 @@
 import os
 import random
 import pygame
-import player as PlayerSprite
-import level as Level
-import teleporterType as TeleporterType
-import enemyType as EnemyType
-import healthUp as HealthUp
+from player import PlayerSprite
+from level import Level
+from teleporterType import TeleporterType
+from enemyType import EnemyType
+from bossType import BossType
+from projectile import Projectile
 import time
 import re
 
@@ -86,46 +87,6 @@ jump = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "jumpP.wav"))
 shoot = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "shoot.wav"))
 
 
-
-#Creating bullets
-class Projectile(object):
-    def __init__ (self,x,y,radius,color, facing):
-        self.x = x#x coord
-        self.y=y#y coord
-        self.radius = radius # how big the bullet is
-        self.color = color#colour of the bullet
-        
-        self.facing = facing#what way the person shooting is facing
-        #facing = -1 or 1
-        
-        self.vel = 7*facing#velocity is by how much the bullet moves
-        #if negative then it moves to the left
-        #if positive it moves to the right
-
-    def draw(self, screen, level):
-        if self.x<630 and self.x>30:
-            self.x += self.vel#if the bullet is within the boundaries of the screen keep it moving                        
-        else:#if the bullet is outside of the screen
-            if self in level.bullets:#if the bullet belongs to the player
-                #delete the bullet from the screen
-                level.bullets.pop(level.bullets.index(self))
-            if self in level.eBullets:
-                #delete the bullet from the screen
-                level.eBullets.pop(level.eBullets.index(self))
-
-        #collision with walls
-        for w in level.walls:
-            if self.y-self.radius<w.rect.y+30 and self.y+self.radius>w.rect.y:
-                if self.x+self.radius>w.rect.x and self.x-self.radius<w.rect.x+30:
-                    #if the bullet collides with a wall delete it
-                    if self in level.bullets:#if the bullet belongs to the player
-                        #delete the bullet from the screen
-                        level.bullets.pop(level.bullets.index(self))
-                    if self in level.eBullets:
-                        #delete the bullet from the screen
-                        level.eBullets.pop(level.Bullets.index(self))
-        
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)#draw the circle to the screen
 
 
 
@@ -312,56 +273,53 @@ def levelProgress():
                 level.append(line)
 
 #method interprets the stage and brings it to life
-def readLevels():
+def processCurrentStage():
     x=y=0
     
     temp = levels[stage[1]]#read the current stage the player is at
-    level = Level()
+    currentStage = Level()
     for row in temp:
         #for each row in the level
-        for col in row:
+        for col in row: 
             #for individual letters consisting in the rows
             if col == "W":#add a wall
-                level.addWall(x, y)
+                currentStage.addWall(x, y)
                 
             elif col == "E":#add a police weasel
-                level.addEnemy(x, y-10, 32, 40, x+(30*4), 5, EnemyType.MEDIUM)
+                currentStage.addEnemy(x, y-10, 32, 40, x+(30*4), 5, EnemyType.MEDIUM)
                 
             elif col == "e":#add an ordinary weasel
-                level.addEnemy(x, y-10, 32, 40, x+(30*4), 3, EnemyType.EASY)
+                currentStage.addEnemy(x, y-10, 32, 40, x+(30*4), 3, EnemyType.EASY)
                 
             elif col == "S":#add a spike
-                level.addSpike(x, y)
+                currentStage.addSpike(x, y)
                 
             elif col == "H":#add 1-up
-               level.addHealthUp(x, y)
+               currentStage.addHealthUp(x, y)
                 
             elif col == "D":#add teleporter that goes down
-                level.addTeleporter(x, y, TeleporterType.DOWN)
+                currentStage.addTeleporter(x, y, TeleporterType.DOWN)
                 
             elif col =="U":#add teleporter that goes down
-                level.addTeleporter(x, y, TeleporterType.UP)
+                currentStage.addTeleporter(x, y, TeleporterType.UP)
                 
             elif col == "I":#add interactive object
-                level.addInteractive(Interactive(x, y))
+                currentStage.addInteractive(Interactive(x, y))
                 
             elif col == "b":#add miniboss
-                level.addBoss(x,y-20,64,80,x+(30*4), 25,"boss")
+                currentStage.addBoss(x, y - 20, 64, 80, x + (30 * 4), 25, BossType.MINIBOSS)
                 
             elif col == "B":#add boss
-                b=Boss(x,y-20,64,80,x+(30*11), 55,"Boss")
-                boss.append(b)#add to array holding bosses
+                currentStage.addBoss(x, y - 20, 64, 80, x + (30 * 11), 55, BossType.BOSS)
 
             elif col == "F":#add boss
-                b=Boss(x,y-20,64,80,x+(30*11), 55,"Boss")
-                boss.append(b)#add to array holding bosses
+                currentStage.addBoss(x, y - 20, 64, 80, x + (30 * 11), 55, BossType.FINAL_BOSS)
             
-            x+= 30 #add 30pixels to x so the entities are different coordinates, reads from left to right
-        y+=30#add 30 pixels to work downwards from screen, reads from top to bottom
+            x += 30 #add 30pixels to x so the entities are different coordinates, reads from left to right
+        y += 30#add 30 pixels to work downwards from screen, reads from top to bottom
         x=0
-        return level
+    return currentStage
         
-
 #Creates a button
 def Button(msg, x, y, w, h, a, ia, loop,action=None):
     mouse = pygame.mouse.get_pos()
@@ -501,7 +459,6 @@ def gameNew():
             i=0
         else:
             i+=1
-
         
         #if statements that determine what picture is being displayed
         if s==0:
@@ -573,6 +530,7 @@ def gameNew():
         pygame.display.update()
         
     game()#play game
+
 #tutorial
 def tutorial():
     #set the level to the tutorial with player's health of 10
@@ -580,7 +538,6 @@ def tutorial():
     stage[1]=0
     player.health=10
     saveGame()
-    
     game()
         
 #method that quits the game and program
@@ -666,7 +623,7 @@ def finishGame():
         pygame.display.update()
 
 #resets the screen
-def reset():
+def reset(currentStage):
     #draws background image
     global backgroundImage
     global level2
@@ -704,7 +661,7 @@ def reset():
             message_display("Don't forget to save!", 350, 120, 15, white)
 
     #draws the walls
-    for wall in walls:
+    for wall in currentStage.walls:
         pygame.draw.rect(screen, white, wall.rect)
     
     #Draws health Icon in top left corner of screen
@@ -775,13 +732,13 @@ def reset():
     
     # drawing everything on the screen
     #draw 1-up
-    for up in ups:
+    for up in currentStage.ups:
         up.draw(screen)
     #draw enemies
-    for enemy in enemies:
+    for enemy in currentStage.enemies:
         enemy.draw(screen)
     #draw all interactives
-    for i in interactive:
+    for i in currentStage.interactive:
         i.draw(screen)
         #if the interactive is locked display the following messages
         if i.locked:
@@ -795,43 +752,35 @@ def reset():
                 message_display("You need a yellow key to open me!",500, 400, 12, white)
     
     #draw bullets
-    for bullet in bullets:
-        bullet.draw(screen)
+    for bullet in currentStage.bullets:
+        bullet.draw(screen, currentStage)
 
     #draw boss
-    for b in boss:
+    for b in currentStage.boss:
         b.draw(screen, player.rect.x)
         
     #draw the enemies bullets
-    for b in eBullets:
-        b.draw(screen)
+    for b in currentStage.eBullets:
+        b.draw(screen, currentStage)
         
     #draw the spikes
-    for s in spikes:
+    for s in currentStage.spikes:
         s.draw(screen)
         
     #draw teleporters going up
-    for t in teleUp:
+    for t in currentStage.teleUp:
         t.draw(screen)
+
     #draw teleporters going down 
-    for t in teleDown:
+    for t in currentStage.teleDown:
         t.draw(screen)
         
     pygame.display.flip()
 
 #deletes all items in the level to prepare for the next level
-def resetLevel():
+def resetStage(level):
     #deletes the contents of the arrays
-    del walls[:]
-    del spikes[:]
-    del enemies[:]
-    del interactive[:]
-    del ups[:]
-    del teleUp[:]
-    del teleDown[:]
-    del eBullets[:]
-    del boss[:]
-    
+    level.resetStage()
     #txt is set to False meaning that the text it previously displayedis no longer displayed
     global txt
     txt=False
@@ -841,10 +790,11 @@ player = PlayerSprite()
 
 #where the game takes place
 def game():
-    
-    resetLevel()#reset the level
+    currentStage = Level()
+    resetStage(currentStage)#reset the level
     levelProgress()#read from the textfile what level the player is on
-    readLevels()#read the stages
+    currentStage = processCurrentStage()#read the stages
+
     #loads music in
     pygame.mixer.music.load(os.path.join(soundEffectsFolder, "music.mp3"))
     # the -1 is the loops, so here it is infinite
@@ -855,8 +805,6 @@ def game():
     
     loseGame = False#variable used to detect whether the player has lost the game
     
-    
-
     #if its the 2nd level the players sprite will have a space helmet on
     if stage[0]==2:
         player.space=True
@@ -871,7 +819,6 @@ def game():
     
     #set the players position in the room at (40,50)
     player.setPos(40,50)
-    
     
     while running:
         #if the player is dead
@@ -912,48 +859,44 @@ def game():
         if teleLoop >150:
             teleLoop = 0
         
-        
         #collision detection for the teleporters
-        for t in teleUp:
+        for t in currentStage.teleUp:
             if player.rect.y<t.y+14 and player.rect.y+44>t.y and teleLoop==0:
                 if player.rect.x+44>t.x and player.rect.x<t.x+32:
                     #if the player collides with the teleporter and teleLoop is 0
                     #reset the level and set it 3 levels lower
                     teleport.play()#play sound effect
-                    resetLevel()
+                    resetStage(currentStage)
                     stage[1]-=3
-                    readLevels()
+                    currentStage = processCurrentStage()
                     #set the players y and x coord
                     player.rect.y = height-60
                     player.rect.x -=10
                     teleLoop = 1#start break
                     
         #collision detection for the teleporters
-        for t in teleDown:
+        for t in currentStage.teleDown:
             if player.rect.y<t.y+14 and player.rect.y+44>t.y and teleLoop==0:
                 if player.rect.x+44>t.x and player.rect.x<t.x+32:
                     teleport.play()#play sound effect
                     #if the player collides with the teleporter and teleLoop is 0
                     #reset the level and set it 3 levels lower
-                    resetLevel()
+                    resetStage(currentStage)
                     stage[1]+=3
-                    readLevels()
+                    currentStage = processCurrentStage()
                     #set the players y and x coord
                     player.rect.y = 80
                     player.rect.x +=10
                     teleLoop = 1#start break
-       
-        
-                    
     
-        for e in enemies:#for all enemies in the stage
+        for e in currentStage.enemies:#for all enemies in the stage
             if random.randrange(100)==0 and e.mode=="medium":#if the enemy us the police weasel and the random number = 0
                 if e.vel<0:#if its facing left
                     f = -1
                 else:#if its facing right
                     f=1
                 #shiit a bullet in the way that the police weasel is facing
-                eBullets.append(Projectile(e.x+18, e.y+11, 6, red, f))
+                currentStage.addEnemyProjectile(e.x+18, e.y+11, 6, red, f)
                 
             if player.rect.y<e.y+e.height and player.rect.y+44>e.y and player.hitLoop==0:
                 if player.rect.x+44>e.x and player.rect.x<e.x+e.width:
@@ -962,20 +905,19 @@ def game():
                     player.healthChange(-1)
         
         #boss jumping and shooting
-        for b in boss:
+        for b in currentStage.boss:
             
             if player.rect.y<b.y+b.height and player.rect.y+44>b.y and player.hitLoop==0:
                 if player.rect.x+44>b.x and player.rect.x<b.x+b.width:
                     #if the player collides with the boss take 1 health away from the player
                     player.healthChange(-1)
             #so there is a break in the enemies shots
-            if boss[0].shootLoop>0:
-                boss[0].shootLoop+=1
-            if boss[0].shootLoop >4:
-                boss[0].shootLoop = 0    
+            if b.shootLoop>0:
+                b.shootLoop+=1
+            if b.shootLoop >4:
+                b.shootLoop = 0    
             
             if random.randrange(30)==0 and b.shootLoop==0:#if a random number from 0-30 is 0 then the boss will shoot
-                
                 facing = 1
                 xShoot = b.x
                 if player.rect.x>b.x:#if the player is to the right of the boss
@@ -984,8 +926,9 @@ def game():
                 else:#if the player is to the right of the boss
                     facing = -1#shoot left
                     xShoot=b.x+b.width#shot will come from the very left of the sprite
-                if len(eBullets)<5:#if theere are less than 5 bullets on the screen allow for another bullet to be made
-                    eBullets.append(Projectile(xShoot, int(b.y+(int(b.height/2))), 9, red,facing))#make bullet
+
+                if len(currentStage.eBullets)<5:#if theere are less than 5 bullets on the screen allow for another bullet to be made
+                    currentStage.addEnemyProjectile(xShoot, int(b.y+(int(b.height/2))), 9, red,facing)
                 b.shootLoop = 1
                 
             #boss jumping
@@ -995,92 +938,86 @@ def game():
                 
             #if the boss is currently jumping
             if b.isJump:
-                if b.mode=="boss" and b.jumpCount >= -8:
+                if b.mode==BossType.MINIBOSS and b.jumpCount >= -8:
                     i=0.7
                     b.y-=(b.jumpCount * abs(b.jumpCount)) * i
                     b.jumpCount -= 1
-                elif b.mode=="Boss" and b.jumpCount>= -9:
+                elif (b.mode==BossType.BOSS or b.mode==BossType.FINAL_BOSS) and b.jumpCount>= -9:
                     i=0.5
-                    
                     b.y-=(b.jumpCount * abs(b.jumpCount)) * i
                     b.jumpCount -= 1
-                    
                 else:
-                    if b.mode=="boss":
+                    if b.mode == BossType.MINIBOSS:
                         b.jumpCount = 8
                     else:
                         b.jumpCount = 9
                     b.isJump = False
+
             else:#gravity for the enemy
                 if b.y+b.height< 477:
                     b.y+=7
 
         
         #collision detection between the bullets and any of the enemies
-        for bullet in bullets:
-            
-            for e in enemies:
+        for bullet in currentStage.bullets:
+            for e in currentStage.enemies:
                 if bullet.y-bullet.radius<e.y+e.height and bullet.y+bullet.radius>e.y:
                     if bullet.x+bullet.radius>e.x and bullet.x-bullet.radius<e.x+e.width:
                         e.hit()
                         if e.health ==0:#if the enemy has no health left delete them from the screen
-                            enemies.pop(enemies.index(e))
-                        bullets.pop(bullets.index(bullet))#delete the bullet as well
+                            currentStage.enemies.pop(currentStage.enemies.index(e))
+                        currentStage.bullets.pop(currentStage.bullets.index(bullet))#delete the bullet as well
                         
-            for e in boss:
+            for e in currentStage.boss:
                 if bullet.y-bullet.radius<e.y+e.height and bullet.y+bullet.radius>e.y:
                     if bullet.x+bullet.radius>e.x and bullet.x-bullet.radius<e.x+e.width:
                         #collision event for the boss and the player's bullet
                         e.hit()#take a hp away from the boss
                         if e.health ==0:#if the boss has no health left delete them from the screen
-                            boss.pop(boss.index(e))
-                        bullets.pop(bullets.index(bullet))#delete the bullet as well
+                            currentStage.boss.pop(currentStage.boss.index(e))
+                        currentStage.bullets.pop(currentStage.bullets.index(bullet))#delete the bullet as well
         
                             
         #what happens when you kill the mini bosses and bosses
-        if stage[0]==1 and stage[1]==2 and len(boss)==0 and loot==False:
+        if stage[0]==1 and stage[1]==2 and len(currentStage.boss)==0 and loot==False:
             #if you kill the first miniboss
             player.addKey("frag1")#add the key fragment
             txt=True#display relevant text
             player.healthChange(4)#add 4 health
             loot=True#player cannot loot this room unless they exit then reenter the room
             
-        if stage[0]==1 and stage[1]==8 and len(boss)==0 and loot==False:
+        if stage[0]==1 and stage[1]==8 and len(currentStage.boss)==0 and loot==False:
             #if you kill the first miniboss
             player.addKey("frag2")#add the key fragment
             txt=True#display relevant text
             player.healthChange(4)#add 4 health
             loot=True#player cannot loot this room unless they exit then reenter the room
         
-        if stage[0]==1 and stage[1]==5 and len(boss)==0 and loot==False:
+        if stage[0]==1 and stage[1]==5 and len(currentStage.boss)==0 and loot==False:
             #if you kill the first boss
             txt=True#display relevant text
             player.healthChange(3)#add 3 health
             loot=True#player cannot loot this room unless they exit then reenter the room
-            del interactive[:]#delete the interactive blocks so the player can escape
+            del currentStage.interactive[:]#delete the interactive blocks so the player can escape
 
-        if stage[0]==2 and stage[1]==5 and len(boss)==0 and loot==False:
+        if stage[0]==2 and stage[1]==5 and len(currentStage.boss)==0 and loot==False:
             #if you kill the first boss
             txt=True#display relevant text
-            del interactive[:]#delete the interactive blocks so the player can escape
+            del currentStage.interactive[:]#delete the interactive blocks so the player can escape
 
         #collision event between the enemies bullets and the player
-        for bullet in eBullets:
+        for bullet in currentStage.eBullets:
             if bullet.y-bullet.radius<player.rect.y+44 and bullet.y+bullet.radius>player.rect.y:
                 if bullet.x+bullet.radius>player.rect.x and bullet.x-bullet.radius<player.rect.x+44:
                     player.healthChange(-1)#minus a health from the player
-                    eBullets.pop(eBullets.index(bullet))#delete the bullet from the screen
-                
-
-        #user input
-                    
+                    currentStage.eBullets.pop(currentStage.eBullets.index(bullet))#delete the bullet from the screen
+  
         if user_input[pygame.K_ESCAPE]:
             #if the user presses the escape button
             quitGame()
         if user_input[pygame.K_s]:
             #if the user presses the s button
             saveGame()
-            
             
         #if player wants to shoot
         if user_input[pygame.K_SPACE] and shootLoop==0:
@@ -1089,14 +1026,13 @@ def game():
                 facing = -1
             else:
                 facing = 1
-            if len(bullets)<5:#if theere are less than 5 bullets on the screen allow for another bullet to be made
+            if len(currentStage.bullets)<5:#if theere are less than 5 bullets on the screen allow for another bullet to be made
                 shoot.play()#play sound effect
-                bullets.append(Projectile(player.rect.x+44, player.rect.y+22, 6, (163,163,194), facing))#make bullet
+                currentStage.addProjectile(player.rect.x+44, player.rect.y+22, 6, (163,163,194), facing)#make bullet
                 player.shoot = True#show a different sprite when shooting
             shootLoop = 1#player has shot
             
 
-        
         #player movement
         if not(player.isJump):
             if user_input[pygame.K_UP]:
@@ -1106,11 +1042,11 @@ def game():
                
             elif player.rect.y < (height-30):
                 #gravity for the player
-                player.move(0,7)
+                player.move(0,7, currentStage)
         else:
             if player.jumpCount >= -8:
                 #make the arc for the jump
-                player.move(0,-(player.jumpCount * abs(player.jumpCount)) * 0.7)
+                player.move(0,-(player.jumpCount * abs(player.jumpCount)) * 0.7, currentStage)
                 player.jumpCount -= 1
                 
             else: 
@@ -1120,22 +1056,22 @@ def game():
         
         if user_input[pygame.K_LEFT]:
             #if the user presses the left key
-            player.move(-5,0)
+            player.move(-5,0, currentStage)
             player.left = True#change sprite to face left
             
             if player.rect.x < -44:
                 #if the player goes off the screen
-                resetLevel()#reset level
+                resetStage(currentStage)#reset level
                 loot=False#loot can happen again in the level
                 stage[1]-=1#go to the stage to the left of the current stage
-                readLevels()#read level
+                currentStage = processCurrentStage()#read level
                 player.rect.x = width-44#set the player to be on the right of the screen
             
         if user_input[pygame.K_RIGHT]:
-            player.move(5,0)
+            player.move(5,0, currentStage)
             player.left = False
             if player.rect.x > width-40:
-                resetLevel()#reset level contents
+                resetStage(currentStage)#reset level contents
                 loot=False#loot can happen again in the level
                 #if the player finishes the tutorial
                 if stage[0]==0 and stage[1]==7:
@@ -1148,7 +1084,7 @@ def game():
                     stage[1]=0
                     player.space=True
                     levelProgress()
-                    readLevels()
+                    currentStage = processCurrentStage()
                     player.setPos(40,player.rect.y)
                     
                 elif stage[0]==2 and stage[1]==5:
@@ -1158,10 +1094,10 @@ def game():
                 else:
                     
                     stage[1]+=1  #go to the stage to the right of the current stage                  
-                    readLevels()#read level
+                    currentStage = processCurrentStage()#read level
                     player.rect.x = 2#set the player to be on the left of the screen
                 
-        reset()#reset the screen
+        reset(currentStage)#reset the screen
         pygame.display.flip()
         
     if loseGame == True:#if the player lost the game

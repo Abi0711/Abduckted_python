@@ -1,12 +1,11 @@
-import wall as Wall
-import spike as Spike
-import enemy as Enemy
-import healthUp as HealthUp
-import teleporter as Teleporter
-import teleporterType as TeleporterType
-import interactive as Interactive
-import projectile as Projectile
-import boss as Boss
+from wall import Wall
+from spike import Spike
+from enemy import Enemy
+from healthUp import HealthUp
+from teleporter import Teleporter
+from teleporterType import TeleporterType
+from projectile import Projectile
+from boss import Boss
 
 class Level:
     def __init__(self):
@@ -49,9 +48,9 @@ class Level:
         self.interactive.append(interactive)
     
     def addBoss(self, x, y, width, height, end, health, mode):
-        self.addBoss(Boss(x, y, width, height, end, health, mode))
+        self.boss.append(Boss(x, y, width, height, end, health, mode))
     
-    def resetLevel(self):
+    def resetStage(self):
         del self.walls[:]
         del self.spikes[:]
         del self.enemies[:]

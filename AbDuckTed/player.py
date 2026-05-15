@@ -11,18 +11,17 @@ teleporterFolder = "teleporter"
 
 soundEffectsFolder = "soundEffects"
 
-hit = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "quack.wav"))
-heal = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "healthUp.wav"))
-rDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rDuck.png")).convert_alpha()
-rDuck= pygame.transform.scale(rDuck, (44,44))
 
 #main player class
 class PlayerSprite(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         #initialise different sprites to be used for animation
-        global rDuck
-        self.rDuck = rDuck
+        self.hit = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "quack.wav"))
+        self.heal = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "healthUp.wav"))
+        self.rDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rDuck.png")).convert_alpha()
+        self.rDuck= pygame.transform.scale(self.rDuck, (44,44))
+
         self.lDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lDuck.png")).convert_alpha()
         self.rShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rShoot.png")).convert_alpha()
         self.lShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lShoot.png")).convert_alpha()
@@ -59,7 +58,7 @@ class PlayerSprite(pygame.sprite.Sprite):
     #method that changes the players health by adding change
     def healthChange(self, change):
         if change<0 and self.hitLoop==0:
-            hit.play()
+            self.hit.play()
             self.hitLoop=1
             self.health += change
         if change>0:
@@ -117,11 +116,11 @@ class PlayerSprite(pygame.sprite.Sprite):
         self.image.set_colorkey([255,255,255])
         self.image = pygame.transform.scale(self.image, (44,44))#sets the image to 44x44 pixels
     #method that moves the player 
-    def move(self,dx,dy):
+    def move(self,dx,dy, currentStage):
         if dx!=0:
-            self.move_single_axis(dx,0)
+            self.move_single_axis(dx,0, currentStage)
         if dy!=0:
-            self.move_single_axis(0,dy)
+            self.move_single_axis(0,dy, currentStage)
 
     #method that moves the player in a direction with a collision detection for walls, spikes and the interactives
     def move_single_axis(self, dx, dy, level):
@@ -154,7 +153,7 @@ class PlayerSprite(pygame.sprite.Sprite):
         #same code as walls except with the health rect instead
         for h in level.ups:
             if self.rect.colliderect(h.rect):
-                heal.play()
+                self.heal.play()
                 self.healthChange(1)
                 level.ups.pop(level.ups.index(h))     
         pygame.event.pump()
@@ -169,7 +168,6 @@ class PlayerSprite(pygame.sprite.Sprite):
                         f.interact(level.interactive)#interact with object
                 
             if self.rect.colliderect(f.rect):
-                
                 if dx > 0:#Moving right, collide with left side of spike
                     self.rect.right = f.rect.left
                 if dx < 0:#moving left, collide with right side of spike
@@ -179,5 +177,5 @@ class PlayerSprite(pygame.sprite.Sprite):
                 if dy < 0:#moving up, collide with the bottom of the spike
                     self.rect.top = f.rect.bottom
                 if user_input[pygame.K_e]:#if the user pressed e
-                    f.interact()#interact with object
+                    f.interact(level.interactive)#interact with object
 

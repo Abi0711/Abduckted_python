@@ -2,7 +2,7 @@ import pygame
 
 #Creating bullets
 class Projectile(object):
-    def __init__ (self,x,y,radius,color, facing):
+    def __init__ (self, x, y, radius, color, facing):
         self.x = x#x coord
         self.y=y#y coord
         self.radius = radius # how big the bullet is
@@ -36,6 +36,6 @@ class Projectile(object):
                         level.bullets.pop(level.bullets.index(self))
                     if self in level.eBullets:
                         #delete the bullet from the screen
-                        level.eBullets.pop(level.Bullets.index(self))
+                        level.eBullets.pop(level.eBullets.index(self))
         
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)#draw the circle to the screen

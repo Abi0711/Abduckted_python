@@ -1,5 +1,6 @@
 import pygame
 import os
+from enemyType import EnemyType
 
 spriteFolder = "sprites"
 enemyFolder = "enemy"
@@ -21,7 +22,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rMedium.png")).convert_alpha()
         self.lMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lMedium.png")).convert_alpha()
         #if the enemy is an easy enemy
-        if mode=="easy":
+        if mode==EnemyType.EASY:
             #image will be of the original weasel
             self.image = self.rEasy
             #the speed at which the enemy moves is faster than the police weasel
@@ -34,25 +35,27 @@ class Enemy(pygame.sprite.Sprite):
         self.image.set_colorkey([255,255,255])
         self.image = pygame.transform.scale(self.image, (self.width,self.height))#scale the image to the preferred width and height
         self.rect = self.image.get_rect()
+
     #method that draws the enemy on screen
     def draw(self, screen):
         self.move()
         if self.vel>0:
             #if the velocity is greater than 0 it means that the player is moving to the right
             #if the type of weasel is easy it will display the ordinary weasel facing the right
-            if self.mode=="easy":
+            if self.mode==EnemyType.EASY:
                 self.image = self.rEasy               
             else:
                 self.image = self.rMedium
         else:
             #if the weasel is moving to the left display the appropriate sprites
-            if self.mode=="easy":
+            if self.mode==EnemyType.EASY:
                 self.image = self.lEasy                
             else:
                 self.image = self.lMedium
         self.image.set_colorkey([255,255,255])
         self.image = pygame.transform.scale(self.image, (self.width,self.height))#scale the image to the preferred width and height
         screen.blit(self.image, (self.x, self.y))#draw enemy at coordinate (x,y)
+
     #method that hurts the enemy
     def hit(self):
         self.health-=1#health minus 1

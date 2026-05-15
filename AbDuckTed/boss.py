@@ -1,6 +1,6 @@
 import pygame
 import os
-import bossType as BossType
+from bossType import BossType
 
 spriteFolder = "sprites"
 collectiblesFolder = "collectibles"
