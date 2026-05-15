@@ -5,6 +5,7 @@ import player as PlayerSprite
 import level as Level
 import teleporterType as TeleporterType
 import enemyType as EnemyType
+import healthUp as HealthUp
 import time
 import re
 
@@ -210,18 +211,6 @@ class Projectile(object):
         
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)#draw the circle to the screen
 
-#class that creates a Spike object
-class Spike(object):
-    def __init__ (self, x, y):
-        self.x = x#x coord
-        self.y = y#y coord
-        self.image = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "spikes.png")).convert_alpha()#load in sprite
-        self.rect = pygame.Rect(x, y, 30, 4)#spikes rectangle
-
-    #draw the spike to the screen
-    def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))#draw the spike at the (x,y) coord
-
 
 #class to create interactive blocks
 class Interactive(object):
@@ -270,35 +259,6 @@ class Interactive(object):
         
 
     
-#Creates teleporters
-class Teleporter(object):
-    def __init__ (self,x,y,direction):
-        self.x=x#x coord
-        self.y=y#y coord
-        if direction =="up":# if it is a teleporter going up
-            self.image = pygame.image.load(os.path.join(spriteFolder, teleporterFolder, "up.png")).convert_alpha()
-        if direction =="down":# if it is a teleporter going down image is a different sprite
-            self.image = pygame.image.load(os.path.join(spriteFolder, teleporterFolder, "down.png")).convert_alpha()
-
-    def draw(self,screen):
-        screen.blit(self.image, (self.x,self.y))#draw image at (x,y) to the screen
-        
-#class that creates 1ups
-class HealthUp(object):
-    def __init__ (self,x,y):
-        self.x = x#x coord
-        self.y = y#y coord
-        self.image = bread#set the image to bread
-        self.rect = pygame.Rect(x, y, 30, 30)#create the hitbox rectangle
-    def draw(self, screen):
-        screen.blit(self.image, (self.x,self.y))#draw image to (x,y) onto the screen
-
-    
-#a class for walls / blocks to jump onto
-class Wall(object):
-    def __init__(self, wx, wy):
-        walls.append(self)#add the instance of the wall to the array that keeps walls
-        self.rect = pygame.Rect(wx, wy, 30, 30)#Create the rectangle for what it looks like
 
 
 #The two methods together create a text to be shown on screen
@@ -448,40 +408,33 @@ def readLevels():
             if col == "W":#add a wall
                 level.addWall(x, y)
                 
-            if col == "E":#add a police weasel
-                level.addEnemy(x,y-10, 32,40,x+(30*4), 5, "medium")
-                e = Enemy()
-                enemies.append(e)#add to array holding basic enemies
+            elif col == "E":#add a police weasel
+                level.addEnemy(x, y-10, 32, 40, x+(30*4), 5, EnemyType.MEDIUM)
                 
-            if col == "e":#add an ordinary weasel
-                e = Enemy(x,y-10, 32,40,x+(30*4), 3, "easy")
-                enemies.append(e)#add to array holding basic enemies
+            elif col == "e":#add an ordinary weasel
+                level.addEnemy(x, y-10, 32, 40, x+(30*4), 3, EnemyType.EASY)
                 
-            if col == "S":#add a spike
-                s = Spike(x,y+26)
-                spikes.append(s)#add to array holding spikes
+            elif col == "S":#add a spike
+                level.addSpike(x, y)
                 
-            if col == "H":#add 1-up
-                h = HealthUp(x,y)
-                ups.append(h)#add to array holding 1-ups
+            elif col == "H":#add 1-up
+               level.addHealthUp(x, y)
                 
-            if col == "D":#add teleporter that goes down
-                d = Teleporter(x,y+10,"down")
-                teleDown.append(d)#add to array holding teleporters going down
+            elif col == "D":#add teleporter that goes down
+                level.addTeleporter(x, y, TeleporterType.DOWN)
                 
-            if col =="U":#add teleporter that goes down
-                u = Teleporter(x,y+10,"up")
-                teleUp.append(u)#add to array holding teleporters going up
+            elif col =="U":#add teleporter that goes down
+                level.addTeleporter(x, y, TeleporterType.UP)
                 
-            if col == "I":#add interactive object
+            elif col == "I":#add interactive object
                 i=Interactive(x,y)
                 interactive.append(i)#add to array holding interactives
                 
-            if col == "b":#add miniboss
+            elif col == "b":#add miniboss
                 b=Boss(x,y-20,64,80,x+(30*4), 25,"boss")
                 boss.append(b)#add to array holding bosses
                 
-            if col == "B":#add boss
+            elif col == "B":#add boss
                 b=Boss(x,y-20,64,80,x+(30*11), 55,"Boss")
                 boss.append(b)#add to array holding bosses
             

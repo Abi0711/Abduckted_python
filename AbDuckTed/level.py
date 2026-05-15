@@ -1,6 +1,9 @@
 import wall as Wall
 import spike as Spike
 import enemy as Enemy
+import healthUp as HealthUp
+import teleporter as Teleporter
+import teleporterType as TeleporterType
 
 class Level:
     def __init__(self):
@@ -16,12 +19,22 @@ class Level:
         self.interactive = []#keeps the interactives
 
     def addWall(self, wx, wy):
-        self.walls.append(Wall(wx,wy))
+        self.walls.append(Wall(wx, wy))
 
     def addEnemy(self, x, y, width, height, end, health, mode):
         self.enemies.append(Enemy(x, y, width, height, end, health, mode))
 
     def addSpike(self, x, y):
         self.spikes.append(Spike(x, y))
+    
+    def addHealthUp(self, x, y):
+        self.ups.append(HealthUp(x, y))
+    
+    def addTeleporter(self, x, y, direction):
+        if direction == TeleporterType.DOWN:
+            self.teleDown.append(Teleporter(x, y, direction))
+        else:
+            self.teleUp.append(Teleporter(x, y, direction))
+
 
         
