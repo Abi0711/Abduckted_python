@@ -21,10 +21,10 @@ class Projectile(object):
         else:#if the bullet is outside of the screen
             if self in level.bullets:#if the bullet belongs to the player
                 #delete the bullet from the screen
-                level.bullets.pop(level.bullets.index(self))
+                level.bullets.remove(self)
             if self in level.eBullets:
                 #delete the bullet from the screen
-                level.eBullets.pop(level.eBullets.index(self))
+                level.eBullets.remove(self)
 
         #collision with walls
         for w in level.walls:
@@ -33,9 +33,9 @@ class Projectile(object):
                     #if the bullet collides with a wall delete it
                     if self in level.bullets:#if the bullet belongs to the player
                         #delete the bullet from the screen
-                        level.bullets.pop(level.bullets.index(self))
+                        level.bullets.remove(self)
                     if self in level.eBullets:
                         #delete the bullet from the screen
-                        level.eBullets.pop(level.eBullets.index(self))
+                        level.eBullets.remove(self)
         
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)#draw the circle to the screen

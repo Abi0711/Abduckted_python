@@ -965,8 +965,8 @@ def game():
                     if bullet.x+bullet.radius>e.x and bullet.x-bullet.radius<e.x+e.width:
                         e.hit()
                         if e.health ==0:#if the enemy has no health left delete them from the screen
-                            currentStage.enemies.pop(currentStage.enemies.index(e))
-                        currentStage.bullets.pop(currentStage.bullets.index(bullet))#delete the bullet as well
+                            currentStage.enemies.remove(e)
+                        currentStage.bullets.remove(bullet)#delete the bullet as well
                         
             for e in currentStage.boss:
                 if bullet.y-bullet.radius<e.y+e.height and bullet.y+bullet.radius>e.y:
@@ -974,9 +974,9 @@ def game():
                         #collision event for the boss and the player's bullet
                         e.hit()#take a hp away from the boss
                         if e.health ==0:#if the boss has no health left delete them from the screen
-                            currentStage.boss.pop(currentStage.boss.index(e))
-                        currentStage.bullets.pop(currentStage.bullets.index(bullet))#delete the bullet as well
-        
+                            currentStage.boss.remove(e)
+                        currentStage.bullets.remove(bullet)#delete the bullet as well
+
                             
         #what happens when you kill the mini bosses and bosses
         if stage[0]==1 and stage[1]==2 and len(currentStage.boss)==0 and loot==False:
@@ -1010,7 +1010,7 @@ def game():
             if bullet.y-bullet.radius<player.rect.y+44 and bullet.y+bullet.radius>player.rect.y:
                 if bullet.x+bullet.radius>player.rect.x and bullet.x-bullet.radius<player.rect.x+44:
                     player.healthChange(-1)#minus a health from the player
-                    currentStage.eBullets.pop(currentStage.eBullets.index(bullet))#delete the bullet from the screen
+                    currentStage.eBullets.remove(bullet)#delete the bullet from the screen
   
         if user_input[pygame.K_ESCAPE]:
             #if the user presses the escape button
