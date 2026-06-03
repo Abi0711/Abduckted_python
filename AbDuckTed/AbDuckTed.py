@@ -270,8 +270,7 @@ def Button(msg, x, y, w, h, a, ia, loop,action=None):
     else:
         pygame.draw.rect(screen, ia, (x, y, w, h))#if player doesn't hover over button it is inactive
     #show the text in the middle of the button
-    smallText = pygame.font.SysFont("berlinsansfb", 20)
-    text_surface, text_rect = text_objects(msg, smallText,config.colours["black"])
+    text_surface, text_rect = text_objects(msg, config.fonts["small"], config.colours["black"])
     text_rect.center = (x+(w/2)), (y+(h/2))
     screen.blit(text_surface, text_rect)#draw text ontop of rectangle
     
