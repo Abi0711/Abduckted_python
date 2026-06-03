@@ -1,7 +1,7 @@
 1
-0
+7
 10
-False
-False
-False
-False
+True
+True
+True
+True

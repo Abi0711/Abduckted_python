@@ -22,6 +22,19 @@ teleporterFolder = "teleporter"
 backgroundImageFolder = "background"
 endSlidesFolder = "endSlides"
 openingSlidesFolder = "openingSlides"
+teleporterFolder = "teleporter"
+
+enemy_sprites = {
+    "spikes": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "spikes.png")).convert_alpha(),
+    "lMedium": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lMedium.png")).convert_alpha(),
+    "rMedium": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rMedium.png")).convert_alpha(),
+    "lEasy": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lEasy.png")).convert_alpha(),
+    "rEasy": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rEasy.png")).convert_alpha(),
+    "lBoss": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lBoss.png")).convert_alpha(),
+    "rBoss": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rBoss.png")).convert_alpha(),
+    "lBossFinal": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lBossFinal.png")).convert_alpha(),
+    "rBossFinal": pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rBossFinal.png")).convert_alpha(),
+}
 
 duck_sprites = {
     "rDuck":       pygame.transform.scale(pygame.image.load(os.path.join(spriteFolder, playerFolder, "rDuck.png")).convert_alpha(), (44, 44)),
@@ -32,6 +45,11 @@ duck_sprites = {
     "lSpaceShoot": pygame.image.load(os.path.join(spriteFolder, playerFolder, "lSpaceShoot.png")).convert_alpha(),
     "rSpace":      pygame.image.load(os.path.join(spriteFolder, playerFolder, "rSpace.png")).convert_alpha(),
     "lSpace":      pygame.image.load(os.path.join(spriteFolder, playerFolder, "lSpace.png")).convert_alpha(),
+}
+
+teleporter_sprites = {
+    "up": pygame.image.load(os.path.join(spriteFolder, teleporterFolder, "up.png")).convert_alpha(),
+    "down": pygame.image.load(os.path.join(spriteFolder, teleporterFolder, "down.png")).convert_alpha(),
 }
 
 key_sprites = {

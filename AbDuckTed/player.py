@@ -1,34 +1,21 @@
 import pygame
-import os
-
-spriteFolder = "sprites"
-collectiblesFolder = "collectibles"
-healthUpFolder = "healthUp"
-keyAndLockFolder = "keyAndLock"
-enemyFolder = "enemy"
-playerFolder = "ted"
-teleporterFolder = "teleporter"
-
-soundEffectsFolder = "soundEffects"
-
+import config
 
 #main player class
 class PlayerSprite(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         #initialise different sprites to be used for animation
-        self.hit = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "quack.wav"))
-        self.heal = pygame.mixer.Sound(os.path.join(soundEffectsFolder, "healthUp.wav"))
-        self.rDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rDuck.png")).convert_alpha()
-        self.rDuck= pygame.transform.scale(self.rDuck, (44,44))
-
-        self.lDuck = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lDuck.png")).convert_alpha()
-        self.rShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rShoot.png")).convert_alpha()
-        self.lShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lShoot.png")).convert_alpha()
-        self.rSpaceShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rSpaceShoot.png")).convert_alpha()
-        self.lSpaceShoot = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lSpaceShoot.png")).convert_alpha()
-        self.rSpace = pygame.image.load(os.path.join(spriteFolder, playerFolder, "rSpace.png")).convert_alpha()
-        self.lSpace = pygame.image.load(os.path.join(spriteFolder, playerFolder, "lSpace.png")).convert_alpha()
+        self.hit = config.sounds["hit"]
+        self.heal = config.sounds["heal"]
+        self.rDuck = config.duck_sprites["rDuck"]
+        self.lDuck = config.duck_sprites["lDuck"]
+        self.rShoot = config.duck_sprites["rShoot"]
+        self.lShoot = config.duck_sprites["lShoot"]
+        self.rSpaceShoot = config.duck_sprites["rSpaceShoot"]
+        self.lSpaceShoot = config.duck_sprites["lSpaceShoot"]
+        self.rSpace = config.duck_sprites["rSpace"]
+        self.lSpace = config.duck_sprites["lSpace"]
                 
         self.image = self.rDuck
         self.image.set_colorkey([255,255,255])
@@ -39,7 +26,6 @@ class PlayerSprite(pygame.sprite.Sprite):
         self.space = False #boolean that represents whether the player is in space/the 2nd level
         self.left = False #boolean that represents whether the player is currently facing left
         self.isJump = False #boolean that represents whether the player is jumping
-        
 
         #keys that the player can obtain
         self.bossKey = False
@@ -83,7 +69,6 @@ class PlayerSprite(pygame.sprite.Sprite):
             
     #method that changes the different sprites of the player
     def change(self):
-        
         #if the player is in space show the sprite that has the helmet on
         if self.space:
             #if it is level 2 the duck will have a space suit on
