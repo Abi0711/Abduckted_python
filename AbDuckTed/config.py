@@ -3,7 +3,9 @@ import pygame
 
 pygame.init()
 pygame.mixer.init()
-
+width = 660#width of the screen
+height = 510#height of the screen
+screen = pygame.display.set_mode((width,height))
 settings = {
     "volume": 50,
     "fullscreen": False,
@@ -37,6 +39,7 @@ key_sprites = {
     "key2":    pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "keyFrag2.png")).convert_alpha(),
     "bossKey": pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "bossKey.png")).convert_alpha(),
     "blueKey": pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "blueKey.png")).convert_alpha(),
+    "lock":    pygame.image.load(os.path.join(spriteFolder, collectiblesFolder, keyAndLockFolder, "lock.png")).convert_alpha(),
 }
 
 collectible_sprites = {
@@ -71,6 +74,8 @@ music = {
     "level1": os.path.join(soundEffectsFolder, "happy.wav"),
     "punch":  os.path.join(soundEffectsFolder, "punch.wav"),
     "victory": os.path.join(soundEffectsFolder, "victory.wav"),
+    "happy": os.path.join(soundEffectsFolder, "happy.wav"),
+    "main": os.path.join(soundEffectsFolder, "music.mp3"),
 }
 
 fonts = {
