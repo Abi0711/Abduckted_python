@@ -313,9 +313,8 @@ def intro():
             if user_input[pygame.K_ESCAPE]:
                 quitGame()
         #load in the background image with the main character sitting on the T
-
         screen.blit(config.background_images["level1"], (0,0))
-        screen.blit(config.duck_sprites["rDuck"], (440,160))
+        screen.blit(config.duck_sprites["rDuck"], (400,180))
 
         #display title
         text_surface, text_rect = text_objects("AbDuckTed", config.fonts["large"], config.colours["yellow"])        
