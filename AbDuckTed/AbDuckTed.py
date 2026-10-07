@@ -113,22 +113,16 @@ def saveGame():
 def loadGame():
     try:
         saveFile = open("save.txt", "r")
-        #open the file to read it
-        
         i = 0#i keeps track of the lines in the file
         
         #will save the level at [0] and individual stage at [1]
         for line in saveFile:
-            
             i+=1
-            
             key=False#will determine whether the player has the key or not
-            
             if line.strip() =="False":#if the line in the file equals to false
                 key = False
             if line.strip()=="True":#if the line in the file equals to true
                 key= True
-            
             if i==3:
                 #if it is the 3rd line in the file the line represents the player's health
                 player.health = int(line)
@@ -166,46 +160,40 @@ def loadGame():
         #if there is a file error
         print("File error.")
 
-#method that reads the stages in an individual level
-def levelProgress():
+
+def updateCurrentStage():
+    """
+    Reads the current stage's levels from it's relevant save file and saves them to the levels list.
+    """
     del levels[:]
     #delete all stages in the array
     global stage
     
-    level=[]#represents an individual stage
-    levelPath = "levelLayouts"
-    if stage[0] ==0:#if it is the tutorial
-        #open file and read line for line
-        for line in open(os.path.join(levelPath, 'tutorial.txt')):
-            if line.strip() =="stop":#if the line equals stop, the entire stage will be added to levels
-                levels.append(level)
-                level = []#level will be blank, ready to copy another stage
-            else:
-                level.append(line)#add line to level
-                
-    elif stage[0] ==1:#if its the 1st level
-        for line in open(os.path.join(levelPath, 'level1.txt')):
-            if line.strip() =="stop":
-                levels.append(level)
-                level = []
-            else:
-                level.append(line)
-                
-    elif stage[0] ==2:#if its the 2nd level
-        for line in open(os.path.join(levelPath, 'level2.txt')):
-            if line.strip() =="stop":
-                levels.append(level)
-                level = []
-            else:
-                level.append(line)
-                
-    else:#if the level is a weird number set the player to the first level
-        for line in open(os.path.join(levelPath, 'level1.txt')):
-            if line.strip() =="stop":
-                levels.append(level)
-                level = []
-            else:
-                level.append(line)
+    if stage[0] == 0:
+        levels = readStageFile(levelFileName='tutorial.txt')
+    elif stage[0] == 1:
+        levels = readStageFile(levelFileName='level1.txt')
+    elif stage[0] == 2:
+        levels = readStageFile(levelFileName='level2.txt')   
+    else:
+        levels = readStageFile(levelFileName='level1.txt')
+        
+
+def readStageFile(levelFileName: str):
+    """
+    Reate
+
+    :return: a list of 
+    """
+    levels = []
+    level = []
+    for line in open(os.path.join(config.levelPath, levelFileName)):
+        if line.strip() == "stop":
+            levels.append(level)
+            level = []
+        else:
+            level.append(line)
+    return levels
 
 #method interprets the stage and brings it to life
 def processCurrentStage():
@@ -700,7 +688,7 @@ player = PlayerSprite()
 def game():
     currentStage = Level()
     resetStage(currentStage)#reset the level
-    levelProgress()#read from the textfile what level the player is on
+    updateCurrentStage()#read from the textfile what level the player is on
     currentStage = processCurrentStage()#read the stages
 
     #loads music in
@@ -991,7 +979,7 @@ def game():
                     stage[0]=2#go to the sencond level stage 1
                     stage[1]=0
                     player.space=True
-                    levelProgress()
+                    updateCurrentStage()
                     currentStage = processCurrentStage()
                     player.setPos(40,player.rect.y)
                     
