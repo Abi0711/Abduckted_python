@@ -108,14 +108,13 @@ def show_message(text, top, left, size, colour):
     text_rect.center = (top, left)
     screen.blit(text_surface, text_rect)
         
-#method that saves the game into a textfile
 def save_game():
+    """
+    Saves the current game state to a file named save.txt.
+    Saves the current stage, player's health, and key fragments to the file.
+    """
     try:
         saveFile = open("save.txt", "w")
-        #open the file that holds the information for saved files
-
-        #print to the file all necessary info
-        #the stages, players health, what keys the player has
         saveFile.write(str(stage[0])+"\n")
         saveFile.write(str(stage[1])+"\n")
         saveFile.write(str(player.health)+"\n")
@@ -124,11 +123,11 @@ def save_game():
         saveFile.write(str(player.bossKey)+"\n")
         saveFile.write(str(player.blueKey))
         #close the file
-        print("Save successful!")
+        show_message("Save successful!", 300, 100, 12, config.colours["white"])
         saveFile.close()
     except IOError:
         # if there is an error
-        print("Unable to save. :(")
+        show_message("Unable to save. :(", 300, 100, 12, config.colours["white"])
         
         
 #loads where the player was last according to what was saved in the textfile
@@ -187,7 +186,7 @@ def updateCurrentStage():
     """
     Reads the current stage's levels from it's relevant save file and saves them to the levels list.
     """
-    del levels[:]
+    levels = []
     #delete all stages in the array
     global stage
     
@@ -199,6 +198,8 @@ def updateCurrentStage():
         levels = readStageFile(levelFileName='level2.txt')   
     else:
         levels = readStageFile(levelFileName='level1.txt')
+
+    return levels
         
 
 def readStageFile(levelFileName: str):
@@ -215,11 +216,11 @@ def readStageFile(levelFileName: str):
             levels.append(level)
             level = []
         else:
-            level.append(line)
+            level.append(line)      
     return levels
 
 #method interprets the stage and brings it to life
-def processCurrentStage():
+def processCurrentStage(levels):
     x=y=0
     
     temp = levels[stage[1]]#read the current stage the player is at
@@ -711,8 +712,8 @@ player = PlayerSprite()
 def game():
     currentStage = Level()
     resetStage(currentStage)#reset the level
-    updateCurrentStage()#read from the textfile what level the player is on
-    currentStage = processCurrentStage()#read the stages
+    levels = updateCurrentStage()#read from the textfile what level the player is on
+    currentStage = processCurrentStage(levels)#read the stages
 
     #loads music in
     pygame.mixer.music.load(config.music["main"])
@@ -787,7 +788,7 @@ def game():
                     config.sounds["teleport"].play()#play sound effect
                     resetStage(currentStage)
                     stage[1]-=3
-                    currentStage = processCurrentStage()
+                    currentStage = processCurrentStage(levels)
                     #set the players y and x coord
                     player.rect.y = height-60
                     player.rect.x -=10
@@ -802,7 +803,7 @@ def game():
                     #reset the level and set it 3 levels lower
                     resetStage(currentStage)
                     stage[1]+=3
-                    currentStage = processCurrentStage()
+                    currentStage = processCurrentStage(levels)
                     #set the players y and x coord
                     player.rect.y = 80
                     player.rect.x +=10
@@ -983,7 +984,7 @@ def game():
                 resetStage(currentStage)#reset level
                 loot=False#loot can happen again in the level
                 stage[1]-=1#go to the stage to the left of the current stage
-                currentStage = processCurrentStage()#read level
+                currentStage = processCurrentStage(levels)#read level
                 player.rect.x = width-44#set the player to be on the right of the screen
             
         if user_input[pygame.K_RIGHT]:
@@ -1002,8 +1003,8 @@ def game():
                     stage[0]=2#go to the sencond level stage 1
                     stage[1]=0
                     player.space=True
-                    updateCurrentStage()
-                    currentStage = processCurrentStage()
+                    levels = updateCurrentStage()
+                    currentStage = processCurrentStage(levels)
                     player.setPos(40,player.rect.y)
                     
                 elif stage[0]==2 and stage[1]==5:
@@ -1013,7 +1014,7 @@ def game():
                 else:
                     
                     stage[1]+=1  #go to the stage to the right of the current stage                  
-                    currentStage = processCurrentStage()#read level
+                    currentStage = processCurrentStage(levels)#read level
                     player.rect.x = 2#set the player to be on the left of the screen
                 
         reset(currentStage)#reset the screen
