@@ -109,56 +109,29 @@ class PlayerSprite(pygame.sprite.Sprite):
     def move_single_axis(self, dx, dy, level):
         self.rect.x +=dx
         self.rect.y +=dy
-        #collsion with walls
-        for wall in level.walls:
-            if self.rect.colliderect(wall.rect):
-                if dx > 0:#Moving right, collide with left side of wall
-                    self.rect.right = wall.rect.left
-                if dx < 0:#moving left, collide with right side of wall
-                    self.rect.left = wall.rect.right
-                if dy > 0:#Moving down, collide with top of wall
-                    self.rect.bottom = wall.rect.top
-                if dy < 0:#moving up, collide with the bottom of the wall
-                    self.rect.top = wall.rect.bottom
+        self.checkCollision(level.walls, dx, dy)
+        if self.checkCollision(level.spikes, dx, dy):
+            self.healthChange(-1)
 
-        #collsion with spikes
-        for s in level.spikes:
-            if self.rect.colliderect(s.rect):
-                if dx > 0:#Moving right, collide with left side of spike
-                    self.rect.right = s.rect.left
-                if dx < 0:#moving left, collide with right side of spike
-                    self.rect.left = s.rect.right
-                if dy > 0:#Moving down, collide with top of spike
-                    self.rect.bottom = s.rect.top
-                if dy < 0:#moving up, collide with the bottom of the spike
-                    self.rect.top = s.rect.bottom
-                self.healthChange(-1)
-        #same code as walls except with the health rect instead
         for h in level.ups:
             if self.rect.colliderect(h.rect):
                 self.heal.play()
                 self.healthChange(1)
                 level.ups.remove(h)    
-        pygame.event.pump()
-        user_input = pygame.key.get_pressed()#get the key pressed by the user
-        #same code as walls except with the interactives rect instead
-        for f in level.interactive:
-            #allows player to be 10 pixels away from the interactive and still be able to interact with it
-            
-            if self.rect.y<f.y+30 and self.rect.y+44>f.y:
-                if self.rect.x+44>f.x-10 and self.rect.x<f.x+40:
-                    if user_input[pygame.K_e]:#if the user pressed e
-                        f.interact(level.interactive, self, level)#interact with object
-                
-            if self.rect.colliderect(f.rect):
-                if dx > 0:#Moving right, collide with left side of spike
-                    self.rect.right = f.rect.left
-                if dx < 0:#moving left, collide with right side of spike
-                    self.rect.left = f.rect.right
-                if dy > 0:#Moving down, collide with top of spike
-                    self.rect.bottom = f.rect.top
-                if dy < 0:#moving up, collide with the bottom of the spike
-                    self.rect.top = f.rect.bottom
-                if user_input[pygame.K_e]:#if the user pressed e
-                    f.interact(level.interactive, self, level)#interact with object
 
+        #same code as walls except with the interactives rect instead
+        interactive = self.checkCollision(level.interactive, dx, dy)
+
+    def checkCollision(self, objects, dx, dy):
+        for object in objects:
+            if self.rect.colliderect(object.rect):
+                if dx > 0:#Moving right, collide with left side of spike
+                    self.rect.right = object.rect.left
+                if dx < 0:#moving left, collide with right side of spike
+                    self.rect.left = object.rect.right
+                if dy > 0:#Moving down, collide with top of spike
+                    self.rect.bottom = object.rect.top
+                if dy < 0:#moving up, collide with the bottom of the spike
+                    self.rect.top = object.rect.bottom
+                return object
+        return False

@@ -12,6 +12,7 @@ from interactiveObject import Interactive
 
 class Level:
     def __init__(self, unprocessed_level: list):
+        
         self.bullets = []#keeps the players bullets
         self.eBullets = []#keeps the enemies bullets
         self.enemies = []#keeps the enemies 
