@@ -18,8 +18,6 @@ class PlayerSprite(pygame.sprite.Sprite):
         self.lSpace = config.duck_sprites["lSpace"]
                 
         self.image = self.rDuck
-        self.image.set_colorkey([255,255,255])
-        self.image = pygame.transform.scale(self.image, (44,44))
         self.rect = self.image.get_rect()
     
         self.shoot = False #boolean that represents whether the player is currently shooting
