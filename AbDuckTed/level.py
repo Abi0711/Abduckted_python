@@ -1,6 +1,5 @@
-from AbDuckTed.AbDuckTed import Interactive
-from AbDuckTed.bossType import BossType
-from AbDuckTed.enemyType import EnemyType
+from bossType import BossType
+from enemyType import EnemyType
 from wall import Wall
 from spike import Spike
 from enemy import Enemy
@@ -9,9 +8,10 @@ from teleporter import Teleporter
 from teleporterType import TeleporterType
 from projectile import Projectile
 from boss import Boss
+from interactiveObject import Interactive
 
 class Level:
-    def __init__(self, level: list):
+    def __init__(self, unprocessed_level: list):
         self.bullets = []#keeps the players bullets
         self.eBullets = []#keeps the enemies bullets
         self.enemies = []#keeps the enemies 
@@ -24,7 +24,7 @@ class Level:
         self.interactive = []#keeps the interactives
         
         x=y=0
-        for row in level:
+        for row in unprocessed_level:
             #for each row in the level
             for col in row: 
                 #for individual letters consisting in the rows

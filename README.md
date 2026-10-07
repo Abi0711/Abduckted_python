@@ -18,7 +18,7 @@ Requirements to run this game:
 
 Then run command:
 ```bash
-python Abduckted.py
+python main.py
 ```
 
 

@@ -3,7 +3,6 @@ import random
 import pygame
 from player import PlayerSprite
 from level import Level
-from teleporterType import TeleporterType
 from enemyType import EnemyType
 from bossType import BossType
 import config
@@ -26,51 +25,6 @@ stage = [0,0]#keeps track of the current level and stage the player is on
 global txt
 txt=False
 
-#class to create interactive blocks
-class Interactive(object):
-    def __init__(self, x, y):
-        self.x=x#x coord
-        self.y=y#y coord
-        self.locked = False#if the interactive is locked 
-        self.image = config.key_sprites["lock"]
-        self.rect = pygame.Rect(x, y, 30, 30)#make the rectangle that the sprite is
-    #method that is executed when the player interacts with the interactive
-    def interact(self, interactive):
-        global txt#access the global variable txt
-        
-        if stage[1]==0 and stage [0] ==1 and player.blueKey:#if the player has a blue key and it is the 1st stage in level 1
-            del interactive[:]#delete the interactive in the room
-            txt=True#display relevant text
-            player.healthChange(8)#add 8hp to the player
-            player.blueKey=False#the player no longer has the blue key
-            
-        elif stage[1]==6 and stage[0]==0 and player.blueKey:#if the player has a blue key and it is the 4th stage in the tutorial
-            del interactive[:]#delete the interactive in the room
-            txt=True#display relevant text
-            player.healthChange(2)#add 2 hp to the player
-            player.blueKey=False#the player no longer has the blue key
-            
-        elif stage[1]==7 and stage[0]==0:#if the player is in the 8th stage in the tutorial
-            del interactive[:]#delete the interactive in the room
-            player.addKey("blueKey")#add the blue key to the player
-            txt=True
-            
-        elif stage[1]==4 and stage[0]==1 and player.bossKey:
-            del interactive[:]#delete the interactive from the screen
-            player.bossKey=False#player no longer has the boss key on them
-            
-        elif stage[1]==3 and stage[0]==1:
-            del interactive[:]#delete the interactive in the room
-            player.addKey("blueKey")#add the blue key to the player
-            txt=True#display relevant text
-            
-        else:
-            self.locked=True#if the player didn't fulfill any of the requirements above, interactive is locked
-            
-    #method that draws the interactive to the screen
-    def draw(self,screen):
-        screen.blit(self.image, (self.x,self.y))#draw image at (x,y) coords
-        
 #The two methods together create a text to be shown on screen
 def create_text_object(text, font, colour):
     """
@@ -196,25 +150,33 @@ def process_current_stage(levels: list):
     currentStage = Level(levels[stage[1]])
     return currentStage
 
-def create_button(msg, x, y, w, h, a, ia, action=None):
+def create_button(msg, x, y, width, height, active_colour, inactive_colour, action=None):
     """
     Creates a button on the screen with the specified message, position, size, and colors.
+
+    :param str msg: The message to display on the button.
+    :param int x: The x-coordinate of the button's top-left corner.
+    :param int y: The y-coordinate of the button's top-left corner.
+    :param int width: The width of the button.
+    :param int height: The height of the button.
+    :param tuple active_colour: The RGB color of the button when hovered over.
+    :param tuple inactive_colour: The RGB color of the button when not hovered over.
+    :param function action: The function to execute when the button is clicked.
     """
-    mouse = pygame.mouse.get_pos()
-    #position of where user has clicked
-    click = pygame.mouse.get_pressed()
-    #whether a person has clicked or not
-    if x+w>mouse[0]>x and y+h>mouse[1]>y:
-        pygame.draw.rect(screen, a, (x, y, w, h))
-        #Creates a hover event
-        if click[0] ==1:
+
+    mouse_position = pygame.mouse.get_pos()
+    is_mouse_pressed = pygame.mouse.get_pressed()
+
+    #Creates a hover event
+    if x + width > mouse_position[0] > x and y + height > mouse_position[1] > y:
+        pygame.draw.rect(screen, active_colour, (x, y, width, height))
+        if is_mouse_pressed[0] == 1:
             action()
-            #if the player clicks anywhere within the button, execute action
     else:
-        pygame.draw.rect(screen, ia, (x, y, w, h))#if player doesn't hover over button it is inactive
+        pygame.draw.rect(screen, inactive_colour, (x, y, width, height))#if player doesn't hover over button it is inactive
     #show the text in the middle of the button
     text_surface, text_rect = create_text_object(msg, config.fonts["small"], config.colours["black"])
-    text_rect.center = (x+(w/2)), (y+(h/2))
+    text_rect.center = (x+(width/2)), (y+(height/2))
     screen.blit(text_surface, text_rect)#draw text ontop of rectangle
     
 #function will run when the player loses all life
@@ -237,7 +199,7 @@ def lose():
         show_message("TRY AGAIN?", 320,200,20, config.colours["white"])
         
         #display buttons on screen
-        button("YES",100, 450, 120, 50, config.colours["brightGreen"], config.colours["green"], gameLoad)
+        create_button("YES",100, 450, 120, 50, config.colours["brightGreen"], config.colours["green"], gameLoad)
         create_button("NO", 400, 450, 120, 50, config.colours["brightRed"], config.colours["red"], quitGame)
 
         #update the screen
@@ -641,11 +603,8 @@ player = PlayerSprite()
 
 #where the game takes place
 def game():
-    currentStage = Level()
-    resetStage(currentStage)#reset the level
     levels = update_current_stage()#read from the textfile what level the player is on
-    currentStage = process_current_stage(levels)#read the stages
-
+    currentStage = process_current_stage(levels)#create a level object with the current level
     #loads music in
     pygame.mixer.music.load(config.music["main"])
     # the -1 is the loops, so here it is infinite
