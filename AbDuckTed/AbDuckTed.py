@@ -7,7 +7,7 @@ from teleporterType import TeleporterType
 from enemyType import EnemyType
 from bossType import BossType
 import config
-
+import xml.etree.ElementTree as ET
 #start pygame
 os.environ["SDL_VIDEO_CENTERED"]="1"
 pygame.init()
@@ -20,7 +20,6 @@ height = 510#height of the screen
 screen = pygame.display.set_mode((width,height))
 clock = pygame.time.Clock()
 
-levels=[[]]#holds the level layout
 stage = [0,0]#keeps track of the current level and stage the player is on
 
 #boolean that allows for text to be shown on the screen according to the stage and level
@@ -100,86 +99,131 @@ def show_message(text, top, left, size, colour):
     :param int size: The font size for the message.
     :param tuple colour: The RGB colour used for the message.
     """
-    #set font & size
     my_text = pygame.font.SysFont("berlinsansfb", size)
-    #create text objects
     text_surface, text_rect = create_text_object(text, my_text, colour)
     #set where the text appears on screen
     text_rect.center = (top, left)
     screen.blit(text_surface, text_rect)
         
+# def save_game():
+#     """
+#     Saves the current game state to a file named save.txt.
+#     Saves the current stage, player's health, and key fragments to the file.
+#     """
+#     try:
+#         saveFile = open("save.txt", "w")
+#         saveFile.write(str(stage[0])+"\n")
+#         saveFile.write(str(stage[1])+"\n")
+#         saveFile.write(str(player.health)+"\n")
+#         saveFile.write(str(player.keyFrag1)+"\n")
+#         saveFile.write(str(player.keyFrag2)+"\n")
+#         saveFile.write(str(player.bossKey)+"\n")
+#         saveFile.write(str(player.blueKey))
+#         #close the file
+#         show_message("Save successful!", 300, 100, 12, config.colours["white"])
+#         saveFile.close()
+#     except IOError:
+#         # if there is an error
+#         show_message("Unable to save. :(", 300, 100, 12, config.colours["white"])
+
 def save_game():
     """
-    Saves the current game state to a file named save.txt.
-    Saves the current stage, player's health, and key fragments to the file.
+    Saves the current game state to an XML file named save.xml.
+    Saves the current stage, player's health, and key fragments to the XML file.
+    """
+    root = ET.Element("game_state")
+    stage_element = ET.SubElement(root, "stage")
+    stage_element.text = str(stage[0])
+    sub_stage_element = ET.SubElement(root, "sub_stage")
+    sub_stage_element.text = str(stage[1])
+    health_element = ET.SubElement(root, "health")
+    health_element.text = str(player.health)
+    key_frag1_element = ET.SubElement(root, "key_frag1")
+    key_frag1_element.text = str(player.keyFrag1)
+    key_frag2_element = ET.SubElement(root, "key_frag2")
+    key_frag2_element.text = str(player.keyFrag2)
+    boss_key_element = ET.SubElement(root, "boss_key")
+    boss_key_element.text = str(player.bossKey)
+    blue_key_element = ET.SubElement(root, "blue_key")
+    blue_key_element.text = str(player.blueKey)
+
+    tree = ET.ElementTree(root)
+    try:
+        tree.write("save.xml", encoding="utf-8", xml_declaration=True)
+        show_message("Save successful!", 300, 100, 12, config.colours["white"])
+    except IOError:
+        show_message("Unable to save. :(", 300, 100, 12, config.colours["white"])
+
+def load_game():
+    """
+    Loads the game state from an XML file named save.xml.
+    Loads the current stage, player's health, and key fragments from the XML file.
     """
     try:
-        saveFile = open("save.txt", "w")
-        saveFile.write(str(stage[0])+"\n")
-        saveFile.write(str(stage[1])+"\n")
-        saveFile.write(str(player.health)+"\n")
-        saveFile.write(str(player.keyFrag1)+"\n")
-        saveFile.write(str(player.keyFrag2)+"\n")
-        saveFile.write(str(player.bossKey)+"\n")
-        saveFile.write(str(player.blueKey))
-        #close the file
-        show_message("Save successful!", 300, 100, 12, config.colours["white"])
-        saveFile.close()
-    except IOError:
-        # if there is an error
-        show_message("Unable to save. :(", 300, 100, 12, config.colours["white"])
+        tree = ET.parse("save.xml")
+        root = tree.getroot()
+        stage[0] = int(root.find("stage").text)
+        stage[1] = int(root.find("sub_stage").text)
+        player.health = int(root.find("health").text)
+        player.keyFrag1 = root.find("key_frag1").text == "True"
+        player.keyFrag2 = root.find("key_frag2").text == "True"
+        player.bossKey = root.find("boss_key").text == "True"
+        player.blueKey = root.find("blue_key").text == "True"
+    except (IOError, ET.ParseError):
+        print("No save file available or file error.")
+
+# def loadGame():
+#     """
+#     Loads the game state from a file named save.txt.
+#     """
+#     try:
+#         saveFile = open("save.txt", "r")
+#         i = 0#i keeps track of the lines in the file
         
-        
-#loads where the player was last according to what was saved in the textfile
-def loadGame():
-    try:
-        saveFile = open("save.txt", "r")
-        i = 0#i keeps track of the lines in the file
-        
-        #will save the level at [0] and individual stage at [1]
-        for line in saveFile:
-            i+=1
-            key=False#will determine whether the player has the key or not
-            if line.strip() =="False":#if the line in the file equals to false
-                key = False
-            if line.strip()=="True":#if the line in the file equals to true
-                key= True
-            if i==3:
-                #if it is the 3rd line in the file the line represents the player's health
-                player.health = int(line)
+#         #will save the level at [0] and individual stage at [1]
+#         for line in saveFile:
+#             i+=1
+#             key=False#will determine whether the player has the key or not
+#             if line.strip() =="False":#if the line in the file equals to false
+#                 key = False
+#             if line.strip()=="True":#if the line in the file equals to true
+#                 key= True
+#             if i==3:
+#                 #if it is the 3rd line in the file the line represents the player's health
+#                 player.health = int(line)
                 
-            elif i==4:
-                if key:
-                    #if it is the 4th line in the file and the line is true
-                    player.addKey("frag1")#add key fragment to player
+#             elif i==4:
+#                 if key:
+#                     #if it is the 4th line in the file and the line is true
+#                     player.addKey("frag1")#add key fragment to player
                     
-            elif i==5:
-                if key:
-                    #if it is the 5th line in the file and the line is true
-                    player.addKey("frag2")#add key fragment to player
-            elif i==6:
-                if key:
-                    #if it is the 6th line in the file and the line is true
-                    player.addKey("frag1")#add key fragment to player
-                    player.addKey("frag2")#add key fragment to player
-                    #by adding both key fragments it will create the boss key
-            elif i==7:
-                if key:
-                    #if it is the 7th line in the file and the line is true
-                    player.addKey("blue")#add blue key
-                break
+#             elif i==5:
+#                 if key:
+#                     #if it is the 5th line in the file and the line is true
+#                     player.addKey("frag2")#add key fragment to player
+#             elif i==6:
+#                 if key:
+#                     #if it is the 6th line in the file and the line is true
+#                     player.addKey("frag1")#add key fragment to player
+#                     player.addKey("frag2")#add key fragment to player
+#                     #by adding both key fragments it will create the boss key
+#             elif i==7:
+#                 if key:
+#                     #if it is the 7th line in the file and the line is true
+#                     player.addKey("blue")#add blue key
+#                 break
                 
-            else:
-                stage[i-1]=int(line)
-                #will save the level at [0] and individual stage at [1]
-        #close file
-        saveFile.close()
-    except IOError:
-        print("No save file available.")
-        #if there is no file under the name save.txt
-    except ValueError:
-        #if there is a file error
-        print("File error.")
+#             else:
+#                 stage[i-1]=int(line)
+#                 #will save the level at [0] and individual stage at [1]
+#         #close file
+#         saveFile.close()
+#     except IOError:
+#         print("No save file available.")
+#         #if there is no file under the name save.txt
+#     except ValueError:
+#         #if there is a file error
+#         print("File error.")
 
 
 def updateCurrentStage():
@@ -343,7 +387,7 @@ def intro():
 
 #loads a game from previous save
 def gameLoad():
-    loadGame()
+    load_game()
     game()
         
 #starts a new game and save file
