@@ -11,6 +11,7 @@ settings = {
     "fullscreen": False,
 }
 
+levelPath = "levelLayouts"
 soundEffectsFolder = "soundEffects"
 spriteFolder = "sprites"
 collectiblesFolder = "collectibles"

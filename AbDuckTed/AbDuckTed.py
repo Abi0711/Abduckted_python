@@ -73,21 +73,43 @@ class Interactive(object):
         screen.blit(self.image, (self.x,self.y))#draw image at (x,y) coords
         
 #The two methods together create a text to be shown on screen
-def text_objects(text, font, colour):
-        textSurface = font.render(text, True, colour)
-        return textSurface, textSurface.get_rect()
+def create_text_object(text, font, colour):
+    """
+    Render text and create a rectangle for positioning it on the screen.
 
-def message_display(text, top, left, size, colour):
-        #set font & size
-        my_text = pygame.font.SysFont("berlinsansfb", size)
-        #create text objects
-        text_surface, text_rect = text_objects(text, my_text, colour)
-        #set where the text appears on screen
-        text_rect.center = (top), (left)
-        screen.blit(text_surface, text_rect)
+    The text is rendered with antialiasing enabled and returned together with
+    its bounding rectangle. The rectangle can then be adjusted, such as by
+    centering it, before the surface is drawn with ``screen.blit``.
+
+    :param str text: The text to render.
+    :param pygame.font.Font font: The Pygame font used to render the text.
+    :param tuple colour: The RGB colour used for the text.
+    :return: A tuple containing the rendered text surface and its rectangle.
+    :rtype: tuple
+    """
+    textSurface = font.render(text, True, colour)
+    return textSurface, textSurface.get_rect()
+
+def show_message(text, top, left, size, colour):
+    """
+    Display a message on the screen at a specified position, size, and colour.
+
+    :param str text: The message to display.
+    :param int top: The vertical position (y-coordinate) for the message.
+    :param int left: The horizontal position (x-coordinate) for the message.
+    :param int size: The font size for the message.
+    :param tuple colour: The RGB colour used for the message.
+    """
+    #set font & size
+    my_text = pygame.font.SysFont("berlinsansfb", size)
+    #create text objects
+    text_surface, text_rect = create_text_object(text, my_text, colour)
+    #set where the text appears on screen
+    text_rect.center = (top, left)
+    screen.blit(text_surface, text_rect)
         
 #method that saves the game into a textfile
-def saveGame():
+def save_game():
     try:
         saveFile = open("save.txt", "w")
         #open the file that holds the information for saved files
@@ -181,9 +203,10 @@ def updateCurrentStage():
 
 def readStageFile(levelFileName: str):
     """
-    Reate
+    Reads the stage 
 
-    :return: a list of 
+    :return: a nested list of the levels in a stage. Where each element is a level, each element of a level is a string representing a row of sprites.
+    :rtype: list
     """
     levels = []
     level = []
@@ -258,7 +281,7 @@ def Button(msg, x, y, w, h, a, ia, loop,action=None):
     else:
         pygame.draw.rect(screen, ia, (x, y, w, h))#if player doesn't hover over button it is inactive
     #show the text in the middle of the button
-    text_surface, text_rect = text_objects(msg, config.fonts["small"], config.colours["black"])
+    text_surface, text_rect = create_text_object(msg, config.fonts["small"], config.colours["black"])
     text_rect.center = (x+(w/2)), (y+(h/2))
     screen.blit(text_surface, text_rect)#draw text ontop of rectangle
     
@@ -278,8 +301,8 @@ def lose():
                 #if player wants to quit it will quit the game
         #display text on a config.colours["black"] screen
         screen.fill(config.colours["black"])
-        message_display("YOU HAVE DIED", 320,100,20, config.colours["white"])
-        message_display("TRY AGAIN?", 320,200,20, config.colours["white"])
+        show_message("YOU HAVE DIED", 320,100,20, config.colours["white"])
+        show_message("TRY AGAIN?", 320,200,20, config.colours["white"])
         
         #display buttons on screen
         Button("YES",100, 450, 120, 50, config.colours["brightGreen"], config.colours["green"], go,gameLoad)
@@ -305,7 +328,7 @@ def intro():
         screen.blit(config.duck_sprites["rDuck"], (400,180))
 
         #display title
-        text_surface, text_rect = text_objects("AbDuckTed", config.fonts["large"], config.colours["yellow"])        
+        text_surface, text_rect = create_text_object("AbDuckTed", config.fonts["large"], config.colours["yellow"])        
         text_rect.center = (330), (255)
         screen.blit(text_surface, text_rect)
         
@@ -333,7 +356,7 @@ def gameNew():
     player.keyFrag1 = False
     player.keyFrag2 = False
     
-    saveGame()
+    save_game()
     go = True
     i=0#count how long each screen goes for
     s=0#number of slides
@@ -376,7 +399,7 @@ def gameNew():
         #if statements that determine what picture is being displayed
         if s==0:
             screen.blit(config.opening_slides["s0"],(0,0))
-            text_surface, text_rect = text_objects("Well that was a good day at work!", config.fonts["small"], config.colours["black"])        
+            text_surface, text_rect = create_text_object("Well that was a good day at work!", config.fonts["small"], config.colours["black"])        
             text_rect.center = (330), (490)
             screen.blit(text_surface, text_rect)
         if s==1:
@@ -388,13 +411,13 @@ def gameNew():
             screen.blit(config.opening_slides["s2"],(0,0))
         if s==3:
             screen.fill(config.colours["black"])
-            text_surface, text_rect = text_objects("'You sure we got the right guy?'", config.fonts["small"], config.colours["red"])        
+            text_surface, text_rect = create_text_object("'You sure we got the right guy?'", config.fonts["small"], config.colours["red"])        
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
             
         if s==4:
             screen.fill(config.colours["black"])
-            text_surface, text_rect = text_objects("...*mumble*...", config.fonts["small"], config.colours["yellow"])        
+            text_surface, text_rect = create_text_object("...*mumble*...", config.fonts["small"], config.colours["yellow"])        
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
             
@@ -403,30 +426,30 @@ def gameNew():
             pygame.mixer.music.play(1)
         if s==5:
             screen.fill(config.colours["black"])
-            text_surface, text_rect = text_objects("'Hey I think he's waking up'", config.fonts["small"], config.colours["red"])        
+            text_surface, text_rect = create_text_object("'Hey I think he's waking up'", config.fonts["small"], config.colours["red"])        
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
             
         if s==6:
             screen.fill(config.colours["black"])
-            text_surface, text_rect = text_objects("3 HOURS LATER", config.fonts["small"], config.colours["white"])        
+            text_surface, text_rect = create_text_object("3 HOURS LATER", config.fonts["small"], config.colours["white"])        
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
             
         if s==7:
             screen.fill(config.colours["black"])
-            text_surface, text_rect = text_objects("'Just chuck him in the cell. We'll deal with him later'", config.fonts["small"], config.colours["yellow"])        
+            text_surface, text_rect = create_text_object("'Just chuck him in the cell. We'll deal with him later'", config.fonts["small"], config.colours["yellow"])        
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
         
         if s==8:
             screen.fill(config.colours["black"])
-            text_surface, text_rect = text_objects("While I was getting dragged in I saw the map of the fortress", config.fonts["small"], config.colours["white"])        
+            text_surface, text_rect = create_text_object("While I was getting dragged in I saw the map of the fortress", config.fonts["small"], config.colours["white"])        
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
         if s==9:
             screen.fill(config.colours["black"])
-            text_surface, text_rect = text_objects("I heard that the 2 guards have a key or something", config.fonts["small"], config.colours["white"])        
+            text_surface, text_rect = create_text_object("I heard that the 2 guards have a key or something", config.fonts["small"], config.colours["white"])        
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
             
@@ -436,7 +459,7 @@ def gameNew():
         if s==11:
             screen.fill(config.colours["black"])
             #display title
-            text_surface, text_rect = text_objects("I have to get out of here...", config.fonts["small"], config.colours["white"])
+            text_surface, text_rect = create_text_object("I have to get out of here...", config.fonts["small"], config.colours["white"])
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
         
@@ -450,7 +473,7 @@ def tutorial():
     stage[0]=0
     stage[1]=0
     player.health=10
-    saveGame()
+    save_game()
     game()
         
 #method that quits the game and program
@@ -510,14 +533,14 @@ def finishGame():
             screen.blit(config.ending_slides["s10"],(0,0))
         if s==9:
             screen.fill(config.colours["black"])
-            text_surface, text_rect = text_objects("Fin", config.fonts["medium"], config.colours["white"])
+            text_surface, text_rect = create_text_object("Fin", config.fonts["medium"], config.colours["white"])
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
         if s==10:
             screen.fill(config.colours["black"])
 
             screen.blit(config.duck_sprites["rDuck"],(300,200))
-            text_surface, text_rect = text_objects("Thanks for playing!", config.fonts["medium"], config.colours["white"])        
+            text_surface, text_rect = create_text_object("Thanks for playing!", config.fonts["medium"], config.colours["white"])        
             text_rect.center = (330), (255)
             screen.blit(text_surface, text_rect)
         
@@ -537,24 +560,24 @@ def reset(currentStage):
     #text shown in the tutorial
     if stage[0]==0:
         if stage[1]==0:#if stage 1 
-            message_display("Use the arrow keys to move and jump",350, 100, 15, config.colours["white"])
-            message_display("Press s to save your game",350, 120, 15, config.colours["white"])
-            message_display("To move onto the next room exit to the right of the screen",350, 140, 15, config.colours["white"])
+            show_message("Use the arrow keys to move and jump",350, 100, 15, config.colours["white"])
+            show_message("Press s to save your game",350, 120, 15, config.colours["white"])
+            show_message("To move onto the next room exit to the right of the screen",350, 140, 15, config.colours["white"])
         if stage[1]==1:#if stage 2
-            message_display("Use the space bar to shoot enemies", 350, 100, 15, config.colours["white"])
-            message_display("Your health and inventory are in the top left corner", 350, 120, 15, config.colours["white"])
+            show_message("Use the space bar to shoot enemies", 350, 100, 15, config.colours["white"])
+            show_message("Your health and inventory are in the top left corner", 350, 120, 15, config.colours["white"])
         if stage[1]==2:#if stage 3
-            message_display("Enemies and spikes will reduce your health", 350, 100, 15, config.colours["white"])
-            message_display("Blue teleporters can be used to go down", 350, 120, 15, config.colours["white"])
+            show_message("Enemies and spikes will reduce your health", 350, 100, 15, config.colours["white"])
+            show_message("Blue teleporters can be used to go down", 350, 120, 15, config.colours["white"])
         if stage[1]==5:#if stage 3
-            message_display("Orange teleporters can be used to go up", 350, 100, 15, config.colours["white"])
+            show_message("Orange teleporters can be used to go up", 350, 100, 15, config.colours["white"])
         if stage[1]==6:#if stage 7
-            message_display("Pick up health by walking over the bread", 330, 100, 15, config.colours["white"])
-            message_display("Interact with objects by pressing e when near them", 320, 120, 15, config.colours["white"])
-            message_display("Some objects are locked whereas others are open", 320, 140, 15, config.colours["white"])
+            show_message("Pick up health by walking over the bread", 330, 100, 15, config.colours["white"])
+            show_message("Interact with objects by pressing e when near them", 320, 120, 15, config.colours["white"])
+            show_message("Some objects are locked whereas others are open", 320, 140, 15, config.colours["white"])
         if stage[1]==7:#if stage 8
-            message_display("Exit to the right when you are done!", 350, 100, 15, config.colours["white"])
-            message_display("Don't forget to save!", 350, 120, 15, config.colours["white"])
+            show_message("Exit to the right when you are done!", 350, 100, 15, config.colours["white"])
+            show_message("Don't forget to save!", 350, 120, 15, config.colours["white"])
 
     #draws the walls
     for wall in currentStage.walls:
@@ -562,7 +585,7 @@ def reset(currentStage):
     
     #Draws health Icon in top left corner of screen
     screen.blit(config.collectible_sprites["bread"], (45,0))
-    message_display("x" + str(player.health), 90, 15, 15, config.colours["black"])
+    show_message("x" + str(player.health), 90, 15, 15, config.colours["black"])
 
     #draws the keys the player currently has
     i=0#variable is used to detect how many keys the player has and print them with space between them
@@ -590,41 +613,41 @@ def reset(currentStage):
     #displays text if txt is true and if the player is in the right room
     if txt:
         if stage[1]==7 and stage[0]==0:
-            message_display("You have obtained a blue key!",500, 320, 12, config.colours["white"])
-            message_display("Now you can go back to the locked box!",500, 340, 12, config.colours["white"])
+            show_message("You have obtained a blue key!",500, 320, 12, config.colours["white"])
+            show_message("Now you can go back to the locked box!",500, 340, 12, config.colours["white"])
         if stage[1]==6 and stage[0]==0:
-            message_display("You have obtained 2 1-ups!",300, 300, 12, config.colours["white"])
+            show_message("You have obtained 2 1-ups!",300, 300, 12, config.colours["white"])
         
         if stage[1]==0 and stage[0]==1:
-            message_display("You have obtained 8 1-ups!",150, 400, 12, config.colours["white"])
+            show_message("You have obtained 8 1-ups!",150, 400, 12, config.colours["white"])
             
         if stage[1]==2 and stage[0]==1:
-            message_display("You have obtained 4 1-ups and a key fragment!",300, 300, 12, config.colours["white"])
+            show_message("You have obtained 4 1-ups and a key fragment!",300, 300, 12, config.colours["white"])
             if player.bossKey:
-                message_display("You now have a yellow key!",300, 320, 12, config.colours["white"])
+                show_message("You now have a yellow key!",300, 320, 12, config.colours["white"])
 
         if stage[0]==1 and stage[1]==8:
-            message_display("You have obtained 4 1-ups and a key fragment!",300, 300, 12, config.colours["white"])
+            show_message("You have obtained 4 1-ups and a key fragment!",300, 300, 12, config.colours["white"])
             if player.bossKey:
-                message_display("You now have a yellow key!",300, 320, 12, config.colours["white"])
+                show_message("You now have a yellow key!",300, 320, 12, config.colours["white"])
             
         if stage[1]==3 and stage[0]==1:
-            message_display("You have obtained a blue key!",150, 40, 12, config.colours["white"])
+            show_message("You have obtained a blue key!",150, 40, 12, config.colours["white"])
             
         if stage[0]==1 and stage[1]==5:
-            message_display("You have defeated the boss!",330, 300, 12, config.colours["white"])
-            message_display("You can now exit the fortress to reach the spaceship to go home!",330, 280, 12, config.colours["white"])
+            show_message("You have defeated the boss!",330, 300, 12, config.colours["white"])
+            show_message("You can now exit the fortress to reach the spaceship to go home!",330, 280, 12, config.colours["white"])
         if stage[0]==2 and stage[1]==5:
-            message_display("You have defeated the boss!",330, 280, 12, config.colours["white"])
-            message_display("Go to the right to escape the planet!",330, 300, 12, config.colours["white"])
+            show_message("You have defeated the boss!",330, 280, 12, config.colours["white"])
+            show_message("Go to the right to escape the planet!",330, 300, 12, config.colours["white"])
     if stage[0]==2 and stage[1]==0:
-        message_display("You're nearly there!",300, 100, 12, config.colours["white"])
+        show_message("You're nearly there!",300, 100, 12, config.colours["white"])
 
     if txt==False and stage[0]==1 and stage[1]==5:
-        message_display("How dare you disturb me!",330, 100, 16, config.colours["red"])
-        message_display("YOU SHALL NOW FACE MY WRATH!",330, 120, 16, config.colours["red"])
+        show_message("How dare you disturb me!",330, 100, 16, config.colours["red"])
+        show_message("YOU SHALL NOW FACE MY WRATH!",330, 120, 16, config.colours["red"])
     if txt==False and stage[0]==2 and stage[1]==5:
-        message_display("YOU WILL NOT DEFEAT ME THIS TIME!",330, 100, 16, config.colours["red"])
+        show_message("YOU WILL NOT DEFEAT ME THIS TIME!",330, 100, 16, config.colours["red"])
     
     # drawing everything on the screen
     #draw 1-up
@@ -639,13 +662,13 @@ def reset(currentStage):
         #if the interactive is locked display the following messages
         if i.locked:
             if stage[0]==0 and stage[1]==6:
-                message_display("You need a blue key to open me!",300, 400, 12, config.colours["white"])
+                show_message("You need a blue key to open me!",300, 400, 12, config.colours["white"])
                 
             if stage[1]==0:
-                message_display("You need a blue key to open me!",150, 400, 12, config.colours["white"])
+                show_message("You need a blue key to open me!",150, 400, 12, config.colours["white"])
             
             if stage[1]==4 and stage[0]==1:
-                message_display("You need a yellow key to open me!",500, 400, 12, config.colours["white"])
+                show_message("You need a yellow key to open me!",500, 400, 12, config.colours["white"])
     
     #draw bullets
     for bullet in currentStage.bullets:
@@ -913,7 +936,7 @@ def game():
             quitGame()
         if user_input[pygame.K_s]:
             #if the user presses the s button
-            saveGame()
+            save_game()
             
         #if player wants to shoot
         if user_input[pygame.K_SPACE] and shootLoop==0:
