@@ -1,15 +1,7 @@
 import pygame
 import os
 from bossType import BossType
-
-spriteFolder = "sprites"
-collectiblesFolder = "collectibles"
-healthUpFolder = "healthUp"
-keyAndLockFolder = "keyAndLock"
-enemyFolder = "enemy"
-playerFolder = "ted"
-teleporterFolder = "teleporter"
-
+import config
 
 class Boss(pygame.sprite.Sprite):
     def __init__ (self, x, y, width, height, end, health, mode):
@@ -26,12 +18,12 @@ class Boss(pygame.sprite.Sprite):
 
         self.shootLoop = 1#allows for a break in the bosses shots
         #load in sprites
-        self.lMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lMedium.png")).convert_alpha()
-        self.rMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rMedium.png")).convert_alpha()
-        self.lBoss = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lBoss.png")).convert_alpha()
-        self.rBoss = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rBoss.png")).convert_alpha()
-        self.lBossFinal = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lBossFinal.png")).convert_alpha()
-        self.rBossFinal = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rBossFinal.png")).convert_alpha()
+        self.lMedium = config.enemy_sprites["lMedium"]
+        self.rMedium = config.enemy_sprites["rMedium"]
+        self.lBoss = config.enemy_sprites["lBoss"]
+        self.rBoss = config.enemy_sprites["rBoss"]
+        self.lBossFinal = config.enemy_sprites["lBossFinal"]
+        self.rBossFinal = config.enemy_sprites["rBossFinal"]
         #if the type of boss is a miniboss or a boss
         if mode == BossType.MINIBOSS:
             self.vel = 2#velocity represents the amount in pixels that the enemy will move

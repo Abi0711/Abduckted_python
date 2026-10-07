@@ -394,8 +394,7 @@ def gameNew():
         if s==1:
             screen.blit(config.opening_slides["s1"],(0,0))
         if s==1 and i==2500:
-            #pygame.mixer.music.load(os.path.join(soundEffectsFolder, "punch.wav")) TODo
-            config.sounds["punch"]
+            pygame.mixer.music.load(config.music["punch"])
             pygame.mixer.music.play(1)
         if s==2:
             screen.blit(config.opening_slides["s2"],(0,0))
@@ -412,8 +411,7 @@ def gameNew():
             screen.blit(text_surface, text_rect)
             
         if s==5 and i==2000:
-            #pygame.mixer.music.load(os.path.join(soundEffectsFolder, "punch.wav"))
-            config.sounds["punch"]
+            pygame.mixer.music.load(config.music["punch"])
             pygame.mixer.music.play(1)
         if s==5:
             screen.fill(config.colours["black"])

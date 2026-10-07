@@ -1,7 +1,0 @@
-0
-0
-10
-False
-False
-False
-False

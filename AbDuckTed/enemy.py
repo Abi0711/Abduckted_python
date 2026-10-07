@@ -1,6 +1,6 @@
 import pygame
-import os
 from enemyType import EnemyType
+import config
 
 spriteFolder = "sprites"
 enemyFolder = "enemy"
@@ -17,10 +17,10 @@ class Enemy(pygame.sprite.Sprite):
         self.mode=mode#mode = easy or medium
         self.health = health#health of the enemy
         #sprites to load in
-        self.rEasy = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rEasy.png")).convert_alpha()
-        self.lEasy = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lEasy.png")).convert_alpha()
-        self.rMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "rMedium.png")).convert_alpha()
-        self.lMedium = pygame.image.load(os.path.join(spriteFolder, enemyFolder, "lMedium.png")).convert_alpha()
+        self.rEasy = config.enemy_sprites["rEasy"]
+        self.lEasy = config.enemy_sprites["lEasy"]
+        self.rMedium = config.enemy_sprites["rMedium"]
+        self.lMedium = config.enemy_sprites["lMedium"]
         #if the enemy is an easy enemy
         if mode==EnemyType.EASY:
             #image will be of the original weasel
