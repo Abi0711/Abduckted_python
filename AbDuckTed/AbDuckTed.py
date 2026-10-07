@@ -104,27 +104,6 @@ def show_message(text, top, left, size, colour):
     #set where the text appears on screen
     text_rect.center = (top, left)
     screen.blit(text_surface, text_rect)
-        
-# def save_game():
-#     """
-#     Saves the current game state to a file named save.txt.
-#     Saves the current stage, player's health, and key fragments to the file.
-#     """
-#     try:
-#         saveFile = open("save.txt", "w")
-#         saveFile.write(str(stage[0])+"\n")
-#         saveFile.write(str(stage[1])+"\n")
-#         saveFile.write(str(player.health)+"\n")
-#         saveFile.write(str(player.keyFrag1)+"\n")
-#         saveFile.write(str(player.keyFrag2)+"\n")
-#         saveFile.write(str(player.bossKey)+"\n")
-#         saveFile.write(str(player.blueKey))
-#         #close the file
-#         show_message("Save successful!", 300, 100, 12, config.colours["white"])
-#         saveFile.close()
-#     except IOError:
-#         # if there is an error
-#         show_message("Unable to save. :(", 300, 100, 12, config.colours["white"])
 
 def save_game():
     """
@@ -172,81 +151,27 @@ def load_game():
     except (IOError, ET.ParseError):
         print("No save file available or file error.")
 
-# def loadGame():
-#     """
-#     Loads the game state from a file named save.txt.
-#     """
-#     try:
-#         saveFile = open("save.txt", "r")
-#         i = 0#i keeps track of the lines in the file
-        
-#         #will save the level at [0] and individual stage at [1]
-#         for line in saveFile:
-#             i+=1
-#             key=False#will determine whether the player has the key or not
-#             if line.strip() =="False":#if the line in the file equals to false
-#                 key = False
-#             if line.strip()=="True":#if the line in the file equals to true
-#                 key= True
-#             if i==3:
-#                 #if it is the 3rd line in the file the line represents the player's health
-#                 player.health = int(line)
-                
-#             elif i==4:
-#                 if key:
-#                     #if it is the 4th line in the file and the line is true
-#                     player.addKey("frag1")#add key fragment to player
-                    
-#             elif i==5:
-#                 if key:
-#                     #if it is the 5th line in the file and the line is true
-#                     player.addKey("frag2")#add key fragment to player
-#             elif i==6:
-#                 if key:
-#                     #if it is the 6th line in the file and the line is true
-#                     player.addKey("frag1")#add key fragment to player
-#                     player.addKey("frag2")#add key fragment to player
-#                     #by adding both key fragments it will create the boss key
-#             elif i==7:
-#                 if key:
-#                     #if it is the 7th line in the file and the line is true
-#                     player.addKey("blue")#add blue key
-#                 break
-                
-#             else:
-#                 stage[i-1]=int(line)
-#                 #will save the level at [0] and individual stage at [1]
-#         #close file
-#         saveFile.close()
-#     except IOError:
-#         print("No save file available.")
-#         #if there is no file under the name save.txt
-#     except ValueError:
-#         #if there is a file error
-#         print("File error.")
 
-
-def updateCurrentStage():
+def update_current_stage():
     """
     Reads the current stage's levels from it's relevant save file and saves them to the levels list.
     """
     levels = []
-    #delete all stages in the array
     global stage
     
     if stage[0] == 0:
-        levels = readStageFile(levelFileName='tutorial.txt')
+        levels = read_stage_file(levelFileName='tutorial.txt')
     elif stage[0] == 1:
-        levels = readStageFile(levelFileName='level1.txt')
+        levels = read_stage_file(levelFileName='level1.txt')
     elif stage[0] == 2:
-        levels = readStageFile(levelFileName='level2.txt')   
+        levels = read_stage_file(levelFileName='level2.txt')   
     else:
-        levels = readStageFile(levelFileName='level1.txt')
+        levels = read_stage_file(levelFileName='level1.txt')
 
     return levels
         
 
-def readStageFile(levelFileName: str):
+def read_stage_file(levelFileName: str):
     """
     Reads the stage 
 
@@ -263,56 +188,18 @@ def readStageFile(levelFileName: str):
             level.append(line)      
     return levels
 
-#method interprets the stage and brings it to life
-def processCurrentStage(levels):
-    x=y=0
-    
-    temp = levels[stage[1]]#read the current stage the player is at
-    currentStage = Level()
-    for row in temp:
-        #for each row in the level
-        for col in row: 
-            #for individual letters consisting in the rows
-            if col == "W":#add a wall
-                currentStage.addWall(x, y)
-                
-            elif col == "E":#add a police weasel
-                currentStage.addEnemy(x, y-10, 32, 40, x+(30*4), 5, EnemyType.MEDIUM)
-                
-            elif col == "e":#add an ordinary weasel
-                currentStage.addEnemy(x, y-10, 32, 40, x+(30*4), 3, EnemyType.EASY)
-                
-            elif col == "S":#add a spike
-                currentStage.addSpike(x, y)
-                
-            elif col == "H":#add 1-up
-               currentStage.addHealthUp(x, y)
-                
-            elif col == "D":#add teleporter that goes down
-                currentStage.addTeleporter(x, y, TeleporterType.DOWN)
-                
-            elif col =="U":#add teleporter that goes down
-                currentStage.addTeleporter(x, y, TeleporterType.UP)
-                
-            elif col == "I":#add interactive object
-                currentStage.addInteractive(Interactive(x, y))
-                
-            elif col == "b":#add miniboss
-                currentStage.addBoss(x, y - 20, 64, 80, x + (30 * 4), 25, BossType.MINIBOSS)
-                
-            elif col == "B":#add boss
-                currentStage.addBoss(x, y - 20, 64, 80, x + (30 * 11), 55, BossType.BOSS)
 
-            elif col == "F":#add boss
-                currentStage.addBoss(x, y - 20, 64, 80, x + (30 * 11), 55, BossType.FINAL_BOSS)
-            
-            x += 30 #add 30pixels to x so the entities are different coordinates, reads from left to right
-        y += 30#add 30 pixels to work downwards from screen, reads from top to bottom
-        x=0
+def process_current_stage(levels: list):
+    """
+    Processes the current stage's levels and creates a Level object with walls, enemies, spikes, teleporters, and interactive objects.
+    """
+    currentStage = Level(levels[stage[1]])
     return currentStage
-        
-#Creates a button
-def Button(msg, x, y, w, h, a, ia, loop,action=None):
+
+def create_button(msg, x, y, w, h, a, ia, action=None):
+    """
+    Creates a button on the screen with the specified message, position, size, and colors.
+    """
     mouse = pygame.mouse.get_pos()
     #position of where user has clicked
     click = pygame.mouse.get_pressed()
@@ -350,8 +237,8 @@ def lose():
         show_message("TRY AGAIN?", 320,200,20, config.colours["white"])
         
         #display buttons on screen
-        Button("YES",100, 450, 120, 50, config.colours["brightGreen"], config.colours["green"], go,gameLoad)
-        Button("NO", 400, 450, 120, 50, config.colours["brightRed"], config.colours["red"], go, quitGame)
+        button("YES",100, 450, 120, 50, config.colours["brightGreen"], config.colours["green"], gameLoad)
+        create_button("NO", 400, 450, 120, 50, config.colours["brightRed"], config.colours["red"], quitGame)
 
         #update the screen
         pygame.display.update()
@@ -378,9 +265,9 @@ def intro():
         screen.blit(text_surface, text_rect)
         
         #display button representing the different options the player can choose
-        Button("Tutorial", 100, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], intro, tutorial)
-        Button("Load Game", 500, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], intro, gameLoad)
-        Button("New Game", 300, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], intro, gameNew)
+        create_button("Tutorial", 100, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], tutorial)
+        create_button("Load Game", 500, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], gameLoad)
+        create_button("New Game", 300, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], gameNew)
 
         pygame.display.update()
 
@@ -756,8 +643,8 @@ player = PlayerSprite()
 def game():
     currentStage = Level()
     resetStage(currentStage)#reset the level
-    levels = updateCurrentStage()#read from the textfile what level the player is on
-    currentStage = processCurrentStage(levels)#read the stages
+    levels = update_current_stage()#read from the textfile what level the player is on
+    currentStage = process_current_stage(levels)#read the stages
 
     #loads music in
     pygame.mixer.music.load(config.music["main"])
@@ -832,7 +719,7 @@ def game():
                     config.sounds["teleport"].play()#play sound effect
                     resetStage(currentStage)
                     stage[1]-=3
-                    currentStage = processCurrentStage(levels)
+                    currentStage = process_current_stage(levels)
                     #set the players y and x coord
                     player.rect.y = height-60
                     player.rect.x -=10
@@ -847,7 +734,7 @@ def game():
                     #reset the level and set it 3 levels lower
                     resetStage(currentStage)
                     stage[1]+=3
-                    currentStage = processCurrentStage(levels)
+                    currentStage = process_current_stage(levels)
                     #set the players y and x coord
                     player.rect.y = 80
                     player.rect.x +=10
@@ -1028,7 +915,7 @@ def game():
                 resetStage(currentStage)#reset level
                 loot=False#loot can happen again in the level
                 stage[1]-=1#go to the stage to the left of the current stage
-                currentStage = processCurrentStage(levels)#read level
+                currentStage = process_current_stage(levels)#read level
                 player.rect.x = width-44#set the player to be on the right of the screen
             
         if user_input[pygame.K_RIGHT]:
@@ -1047,8 +934,8 @@ def game():
                     stage[0]=2#go to the sencond level stage 1
                     stage[1]=0
                     player.space=True
-                    levels = updateCurrentStage()
-                    currentStage = processCurrentStage(levels)
+                    levels = update_current_stage()
+                    currentStage = process_current_stage(levels)
                     player.setPos(40,player.rect.y)
                     
                 elif stage[0]==2 and stage[1]==5:
@@ -1058,7 +945,7 @@ def game():
                 else:
                     
                     stage[1]+=1  #go to the stage to the right of the current stage                  
-                    currentStage = processCurrentStage(levels)#read level
+                    currentStage = process_current_stage(levels)#read level
                     player.rect.x = 2#set the player to be on the left of the screen
                 
         reset(currentStage)#reset the screen

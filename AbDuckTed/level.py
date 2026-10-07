@@ -1,3 +1,6 @@
+from AbDuckTed.AbDuckTed import Interactive
+from AbDuckTed.bossType import BossType
+from AbDuckTed.enemyType import EnemyType
 from wall import Wall
 from spike import Spike
 from enemy import Enemy
@@ -8,7 +11,7 @@ from projectile import Projectile
 from boss import Boss
 
 class Level:
-    def __init__(self):
+    def __init__(self, level: list):
         self.bullets = []#keeps the players bullets
         self.eBullets = []#keeps the enemies bullets
         self.enemies = []#keeps the enemies 
@@ -19,6 +22,48 @@ class Level:
         self.teleDown = []#keeps the teleporters going down
         self.teleUp = []#keeps the teleporters going up
         self.interactive = []#keeps the interactives
+        
+        x=y=0
+        for row in level:
+            #for each row in the level
+            for col in row: 
+                #for individual letters consisting in the rows
+                if col == "W":#add a wall
+                    self.addWall(x, y)
+                    
+                elif col == "E":#add a police weasel
+                    self.addEnemy(x, y-10, 32, 40, x+(30*4), 5, EnemyType.MEDIUM)
+                    
+                elif col == "e":#add an ordinary weasel
+                    self.addEnemy(x, y-10, 32, 40, x+(30*4), 3, EnemyType.EASY)
+                    
+                elif col == "S":#add a spike
+                    self.addSpike(x, y)
+                    
+                elif col == "H":#add 1-up
+                    self.addHealthUp(x, y)
+                    
+                elif col == "D":#add teleporter that goes down
+                    self.addTeleporter(x, y, TeleporterType.DOWN)
+                    
+                elif col =="U":#add teleporter that goes down
+                    self.addTeleporter(x, y, TeleporterType.UP)
+                    
+                elif col == "I":#add interactive object
+                    self.addInteractive(Interactive(x, y))
+                    
+                elif col == "b":#add miniboss
+                    self.addBoss(x, y - 20, 64, 80, x + (30 * 4), 25, BossType.MINIBOSS)
+                    
+                elif col == "B":#add boss
+                    self.addBoss(x, y - 20, 64, 80, x + (30 * 11), 55, BossType.BOSS)
+    
+                elif col == "F":#add boss
+                    self.addBoss(x, y - 20, 64, 80, x + (30 * 11), 55, BossType.FINAL_BOSS)
+                
+                x += 30 #add 30pixels to x so the entities are different coordinates, reads from left to right
+            y += 30#add 30 pixels to work downwards from screen, reads from top to bottom
+            x=0
 
     def addWall(self, wx, wy):
         self.walls.append(Wall(wx, wy))
