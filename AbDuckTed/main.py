@@ -1,5 +1,6 @@
 import os
 import random
+from stageType import StageType
 import pygame
 from player import PlayerSprite
 from level import Level
@@ -7,6 +8,7 @@ from enemyType import EnemyType
 from bossType import BossType
 import config
 import xml.etree.ElementTree as ET
+from stageTracker import StageTracker
 #start pygame
 os.environ["SDL_VIDEO_CENTERED"]="1"
 pygame.init()
@@ -19,7 +21,7 @@ height = 510#height of the screen
 screen = pygame.display.set_mode((width,height))
 clock = pygame.time.Clock()
 
-stage = [0,0]#keeps track of the current level and stage the player is on
+stage = StageTracker(StageType.TUTORIAL, 0)#create a stage object with the current stage and level
 
 #boolean that allows for text to be shown on the screen according to the stage and level
 global txt
@@ -59,16 +61,16 @@ def show_message(text, top, left, size, colour):
     text_rect.center = (top, left)
     screen.blit(text_surface, text_rect)
 
-def save_game():
+def save_game_to_file():
     """
     Saves the current game state to an XML file named save.xml.
     Saves the current stage, player's health, and key fragments to the XML file.
     """
     root = ET.Element("game_state")
     stage_element = ET.SubElement(root, "stage")
-    stage_element.text = str(stage[0])
-    sub_stage_element = ET.SubElement(root, "sub_stage")
-    sub_stage_element.text = str(stage[1])
+    stage_element.text = str(stage.get_stage_number())
+    sub_stage_element = ET.SubElement(root, "level")
+    sub_stage_element.text = str(stage.get_level_number())
     health_element = ET.SubElement(root, "health")
     health_element.text = str(player.health)
     key_frag1_element = ET.SubElement(root, "key_frag1")
@@ -87,7 +89,7 @@ def save_game():
     except IOError:
         show_message("Unable to save. :(", 300, 100, 12, config.colours["white"])
 
-def load_game():
+def load_game_from_file():
     """
     Loads the game state from an XML file named save.xml.
     Loads the current stage, player's health, and key fragments from the XML file.
@@ -95,8 +97,7 @@ def load_game():
     try:
         tree = ET.parse("save.xml")
         root = tree.getroot()
-        stage[0] = int(root.find("stage").text)
-        stage[1] = int(root.find("sub_stage").text)
+        stage = StageTracker(StageType(int(root.find("stage").text)), int(root.find("level").text))
         player.health = int(root.find("health").text)
         player.keyFrag1 = root.find("key_frag1").text == "True"
         player.keyFrag2 = root.find("key_frag2").text == "True"
@@ -113,11 +114,11 @@ def update_current_stage():
     levels = []
     global stage
     
-    if stage[0] == 0:
+    if stage.get_stage_number() == StageType.TUTORIAL:
         levels = read_stage_file(levelFileName='tutorial.txt')
-    elif stage[0] == 1:
+    elif stage.get_stage_number() == StageType.LEVEL_1:
         levels = read_stage_file(levelFileName='level1.txt')
-    elif stage[0] == 2:
+    elif stage.get_stage_number() == StageType.LEVEL_2:
         levels = read_stage_file(levelFileName='level2.txt')   
     else:
         levels = read_stage_file(levelFileName='level1.txt')
@@ -147,10 +148,10 @@ def process_current_level(levels: list):
     """
     Processes the current stage's levels and creates a Level object with walls, enemies, spikes, teleporters, and interactive objects.
     """
-    currentStage = Level(levels[stage[1]])
+    currentStage = Level(levels[stage.get_level_number()])
     return currentStage
 
-def create_button(msg, x, y, width, height, active_colour, inactive_colour, action=None):
+def show_button(msg, x, y, width, height, active_colour, inactive_colour, action=None):
     """
     Creates a button on the screen with the specified message, position, size, and colors.
 
@@ -173,50 +174,36 @@ def create_button(msg, x, y, width, height, active_colour, inactive_colour, acti
         if is_mouse_pressed[0] == 1:
             action()
     else:
-        pygame.draw.rect(screen, inactive_colour, (x, y, width, height))#if player doesn't hover over button it is inactive
+        pygame.draw.rect(screen, inactive_colour, (x, y, width, height))
     #show the text in the middle of the button
     text_surface, text_rect = create_text_object(msg, config.fonts["small"], config.colours["black"])
     text_rect.center = (x+(width/2)), (y+(height/2))
-    screen.blit(text_surface, text_rect)#draw text ontop of rectangle
+    screen.blit(text_surface, text_rect)
     
-#function will run when the player loses all life
-#user will get the choice to restart the game or quit
+
 def lose():
+    """
+    Displays the "YOU HAVE DIED" screen and provides options to try again or quit the game.
+    """
     go = True
     while go:
-        for event in pygame.event.get():
-            pygame.event.pump()
-            user_input = pygame.key.get_pressed()
-            if event.type == pygame.QUIT:
-                quitGame()
-            if user_input[pygame.K_ESCAPE]:
-                quitGame()
-                
-                #if player wants to quit it will quit the game
-        #display text on a config.colours["black"] screen
+        check_quit_event()
         screen.fill(config.colours["black"])
         show_message("YOU HAVE DIED", 320,100,20, config.colours["white"])
         show_message("TRY AGAIN?", 320,200,20, config.colours["white"])
         
-        #display buttons on screen
-        create_button("YES",100, 450, 120, 50, config.colours["brightGreen"], config.colours["green"], gameLoad)
-        create_button("NO", 400, 450, 120, 50, config.colours["brightRed"], config.colours["red"], quitGame)
-
-        #update the screen
+        show_button("YES",100, 450, 120, 50, config.colours["brightGreen"], config.colours["green"], load_game)
+        show_button("NO", 400, 450, 120, 50, config.colours["brightRed"], config.colours["red"], quit_game)
         pygame.display.update()
     
-#method that shows the title screen
-def intro():
+
+def show_title_screen():
+    """
+    Displays the title screen with options for the player to choose from: Tutorial, Load Game, or New Game.
+    """
     intro = True
     while intro:
-        for event in pygame.event.get():
-            pygame.event.pump()
-            user_input = pygame.key.get_pressed()
-            #allows the player to leave the game
-            if event.type == pygame.QUIT:
-                quitGame()
-            if user_input[pygame.K_ESCAPE]:
-                quitGame()
+        check_quit_event()
         #load in the background image with the main character sitting on the T
         screen.blit(config.background_images["level1"], (0,0))
         screen.blit(config.duck_sprites["rDuck"], (400,180))
@@ -227,30 +214,52 @@ def intro():
         screen.blit(text_surface, text_rect)
         
         #display button representing the different options the player can choose
-        create_button("Tutorial", 100, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], tutorial)
-        create_button("Load Game", 500, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], gameLoad)
-        create_button("New Game", 300, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], gameNew)
+        show_button("Tutorial", 100, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], tutorial)
+        show_button("Load Game", 500, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], load_game)
+        show_button("New Game", 300, 450, 120, 50, config.colours["brightYellow"], config.colours["yellow"], new_game)
 
         pygame.display.update()
 
 
-#loads a game from previous save
-def gameLoad():
-    load_game()
+def check_quit_event():
+    """
+    Checks for quit events and allows the player to exit the game by pressing the ESC key or closing the window.
+    """
+    for event in pygame.event.get():
+        pygame.event.pump()
+        user_input = pygame.key.get_pressed()
+        #allows the player to leave the game
+        if event.type == pygame.QUIT:
+            quit_game()
+        if user_input[pygame.K_ESCAPE]:
+            quit_game()
+
+def load_game():
+    """
+    Loads the game state from a save file and starts the game.
+    """
+    load_game_from_file()
     game()
-        
-#starts a new game and save file
-def gameNew():
+
+def new_game():
+    """
+    Starts a new game and creates a new save file.
+    """
     #set to level one and with players health to 10 and no keys
-    stage[0] = 1
-    stage[1] = 0
+    stage.stage_number = StageType.LEVEL_1
+    stage.level_number = 0
     player.health = 10
     player.blueKey = False
     player.bossKey = False
     player.keyFrag1 = False
     player.keyFrag2 = False
     
-    save_game()
+    save_game_to_file()
+    opening_credits()
+      
+    game()#play game
+
+def opening_credits():
     go = True
     i=0#count how long each screen goes for
     s=0#number of slides
@@ -259,14 +268,7 @@ def gameNew():
     pygame.mixer.music.play(-1)
     
     while go:
-        for event in pygame.event.get():
-            pygame.event.pump()
-            user_input = pygame.key.get_pressed()
-            #allows the player to leave the game
-            if event.type == pygame.QUIT:
-                quitGame()
-            if user_input[pygame.K_ESCAPE]:
-                quitGame()
+        check_quit_event()
 
         #loop allowing for different times for the different slides
                 
@@ -358,24 +360,26 @@ def gameNew():
             screen.blit(text_surface, text_rect)
         
         pygame.display.update()
-        
-    game()#play game
-
-#tutorial
+            
 def tutorial():
+    """
+    Starts the tutorial stage. Saves the game state and starts the game.
+    """
     #set the level to the tutorial with player's health of 10
-    stage[0]=0
-    stage[1]=0
+    stage.stage_number = StageType.TUTORIAL
+    stage.level_number = 0
     player.health=10
-    save_game()
+    save_game_to_file()
     game()
         
-#method that quits the game and program
-def quitGame():
+def quit_game():
+    """
+    Quits the game and closes the Pygame window.
+    """
     pygame.quit()
     quit()
 
-def finishGame():
+def closing_credits():
     go = True
     i=0#count how long it goes for
     s=0#number of slides
@@ -390,10 +394,10 @@ def finishGame():
             
             #allows the player to leave the game
             if event.type == pygame.QUIT:
-                quitGame()
+                quit_game()
         user_input = pygame.key.get_pressed()
         if user_input[pygame.K_ESCAPE]:
-            quitGame()
+            quit_game()
 
         
         if i==2000:#for the other slides if it hits 5000 loops go onto the next slide
@@ -440,48 +444,8 @@ def finishGame():
         
         pygame.display.update()
 
-#resets the screen
-def reset(currentStage):
-    
-    if stage[0] ==0:#if its the first stage
-        screen.fill(config.colours["black"])
-    else:
-        if stage [0]==2:
-            screen.blit(config.background_images["level2"],(0,0))
-        else:
-            screen.blit(config.background_images["level1"],(0,0))
-        
-    #text shown in the tutorial
-    if stage[0]==0:
-        if stage[1]==0:#if stage 1 
-            show_message("Use the arrow keys to move and jump",350, 100, 15, config.colours["white"])
-            show_message("Press s to save your game",350, 120, 15, config.colours["white"])
-            show_message("To move onto the next room exit to the right of the screen",350, 140, 15, config.colours["white"])
-        if stage[1]==1:#if stage 2
-            show_message("Use the space bar to shoot enemies", 350, 100, 15, config.colours["white"])
-            show_message("Your health and inventory are in the top left corner", 350, 120, 15, config.colours["white"])
-        if stage[1]==2:#if stage 3
-            show_message("Enemies and spikes will reduce your health", 350, 100, 15, config.colours["white"])
-            show_message("Blue teleporters can be used to go down", 350, 120, 15, config.colours["white"])
-        if stage[1]==5:#if stage 3
-            show_message("Orange teleporters can be used to go up", 350, 100, 15, config.colours["white"])
-        if stage[1]==6:#if stage 7
-            show_message("Pick up health by walking over the bread", 330, 100, 15, config.colours["white"])
-            show_message("Interact with objects by pressing e when near them", 320, 120, 15, config.colours["white"])
-            show_message("Some objects are locked whereas others are open", 320, 140, 15, config.colours["white"])
-        if stage[1]==7:#if stage 8
-            show_message("Exit to the right when you are done!", 350, 100, 15, config.colours["white"])
-            show_message("Don't forget to save!", 350, 120, 15, config.colours["white"])
 
-    #draws the walls
-    for wall in currentStage.walls:
-        pygame.draw.rect(screen, config.colours["white"], wall.rect)
-    
-    #Draws health Icon in top left corner of screen
-    screen.blit(config.collectible_sprites["bread"], (45,0))
-    show_message("x" + str(player.health), 90, 15, 15, config.colours["black"])
-
-    #draws the keys the player currently has
+def display_keys():
     i=0#variable is used to detect how many keys the player has and print them with space between them
     if player.keyFrag1:
         i+=1
@@ -495,9 +459,49 @@ def reset(currentStage):
     if player.blueKey:
         i+=1
         screen.blit(config.key_sprites["blueKey"], (100+30*i,4))
-    #change player sprite
-    player.change()
 
+def reset_level(currentStage):
+    
+    if stage.get_stage_number() == StageType.TUTORIAL:#if its the tutorial
+        screen.fill(config.colours["black"])
+    else:
+        if stage.get_stage_number() == StageType.LEVEL_2:
+            screen.blit(config.background_images["level2"],(0,0))
+        else:
+            screen.blit(config.background_images["level1"],(0,0))
+        
+    #text shown in the tutorial
+    if stage.get_stage_number() == StageType.TUTORIAL:
+        if stage.get_level_number() == 0:#if stage 1 
+            show_message("Use the arrow keys to move and jump",350, 100, 15, config.colours["white"])
+            show_message("Press s to save your game",350, 120, 15, config.colours["white"])
+            show_message("To move onto the next room exit to the right of the screen",350, 140, 15, config.colours["white"])
+        if stage.get_level_number() == 1:#if stage 2
+            show_message("Use the space bar to shoot enemies", 350, 100, 15, config.colours["white"])
+            show_message("Your health and inventory are in the top left corner", 350, 120, 15, config.colours["white"])
+        if stage.get_level_number() == 2:#if stage 3
+            show_message("Enemies and spikes will reduce your health", 350, 100, 15, config.colours["white"])
+            show_message("Blue teleporters can be used to go down", 350, 120, 15, config.colours["white"])
+        if stage.get_level_number() == 5:#if stage 3
+            show_message("Orange teleporters can be used to go up", 350, 100, 15, config.colours["white"])
+        if stage.get_level_number() == 6:#if stage 7
+            show_message("Pick up health by walking over the bread", 330, 100, 15, config.colours["white"])
+            show_message("Interact with objects by pressing e when near them", 320, 120, 15, config.colours["white"])
+            show_message("Some objects are locked whereas others are open", 320, 140, 15, config.colours["white"])
+        if stage.get_level_number() == 7:#if stage 8
+            show_message("Exit to the right when you are done!", 350, 100, 15, config.colours["white"])
+            show_message("Don't forget to save!", 350, 120, 15, config.colours["white"])
+
+    #draws the walls
+    for wall in currentStage.walls:
+        pygame.draw.rect(screen, config.colours["white"], wall.rect)
+    
+    #Draws health Icon in top left corner of screen
+    screen.blit(config.collectible_sprites["bread"], (45,0))
+    show_message("x" + str(player.health), 90, 15, 15, config.colours["black"])
+
+    display_keys()#displays the keys the player has in the top left corner of the screen
+    
     #draws player onto the screen
     all_sprites_list = pygame.sprite.Group()
     all_sprites_list.add(player)
@@ -506,41 +510,41 @@ def reset(currentStage):
     global txt
     #displays text if txt is true and if the player is in the right room
     if txt:
-        if stage[1]==7 and stage[0]==0:
+        if stage.get_level_number() == 7 and stage.get_stage_number() == StageType.TUTORIAL:
             show_message("You have obtained a blue key!",500, 320, 12, config.colours["white"])
             show_message("Now you can go back to the locked box!",500, 340, 12, config.colours["white"])
-        if stage[1]==6 and stage[0]==0:
+        if stage.get_level_number() == 6 and stage.get_stage_number() == StageType.TUTORIAL:
             show_message("You have obtained 2 1-ups!",300, 300, 12, config.colours["white"])
-        
-        if stage[1]==0 and stage[0]==1:
+
+        if stage.get_level_number() == 0 and stage.get_stage_number() == StageType.LEVEL_1:
             show_message("You have obtained 8 1-ups!",150, 400, 12, config.colours["white"])
-            
-        if stage[1]==2 and stage[0]==1:
+
+        if stage.get_level_number() == 2 and stage.get_stage_number() == StageType.LEVEL_1:
             show_message("You have obtained 4 1-ups and a key fragment!",300, 300, 12, config.colours["white"])
             if player.bossKey:
                 show_message("You now have a yellow key!",300, 320, 12, config.colours["white"])
 
-        if stage[0]==1 and stage[1]==8:
+        if stage.get_stage_number() == StageType.LEVEL_1 and stage.get_level_number() == 8:
             show_message("You have obtained 4 1-ups and a key fragment!",300, 300, 12, config.colours["white"])
             if player.bossKey:
                 show_message("You now have a yellow key!",300, 320, 12, config.colours["white"])
             
-        if stage[1]==3 and stage[0]==1:
+        if stage.get_level_number() == 3 and stage.get_stage_number() == StageType.LEVEL_1:
             show_message("You have obtained a blue key!",150, 40, 12, config.colours["white"])
             
-        if stage[0]==1 and stage[1]==5:
+        if stage.get_stage_number() == StageType.LEVEL_1 and stage.get_level_number() == 5:
             show_message("You have defeated the boss!",330, 300, 12, config.colours["white"])
             show_message("You can now exit the fortress to reach the spaceship to go home!",330, 280, 12, config.colours["white"])
-        if stage[0]==2 and stage[1]==5:
+        if stage.get_stage_number() == StageType.LEVEL_1 and stage.get_level_number() == 5:
             show_message("You have defeated the boss!",330, 280, 12, config.colours["white"])
             show_message("Go to the right to escape the planet!",330, 300, 12, config.colours["white"])
-    if stage[0]==2 and stage[1]==0:
+    if stage.get_stage_number() == StageType.LEVEL_1 and stage.get_level_number() == 0:
         show_message("You're nearly there!",300, 100, 12, config.colours["white"])
 
-    if txt==False and stage[0]==1 and stage[1]==5:
+    if txt==False and stage.get_stage_number() == StageType.LEVEL_2 and stage.get_level_number() == 5:
         show_message("How dare you disturb me!",330, 100, 16, config.colours["red"])
         show_message("YOU SHALL NOW FACE MY WRATH!",330, 120, 16, config.colours["red"])
-    if txt==False and stage[0]==2 and stage[1]==5:
+    if txt==False and stage.get_stage_number() == StageType.LEVEL_2 and stage.get_level_number() == 5:
         show_message("YOU WILL NOT DEFEAT ME THIS TIME!",330, 100, 16, config.colours["red"])
     
     # drawing everything on the screen
@@ -555,13 +559,13 @@ def reset(currentStage):
         i.draw(screen)
         #if the interactive is locked display the following messages
         if i.locked:
-            if stage[0]==0 and stage[1]==6:
+            if stage.get_stage_number() == StageType.TUTORIAL and stage.get_level_number() == 6:
                 show_message("You need a blue key to open me!",300, 400, 12, config.colours["white"])
                 
-            if stage[1]==0:
+            if stage.get_level_number() == 0:
                 show_message("You need a blue key to open me!",150, 400, 12, config.colours["white"])
             
-            if stage[1]==4 and stage[0]==1:
+            if stage.get_level_number() == 4 and stage.get_stage_number() == StageType.LEVEL_1:
                 show_message("You need a yellow key to open me!",500, 400, 12, config.colours["white"])
     
     #draw bullets
@@ -616,7 +620,7 @@ def game():
     loseGame = False#variable used to detect whether the player has lost the game
     
     #if its the 2nd level the players sprite will have a space helmet on
-    if stage[0]==2:
+    if stage.get_stage_number() == StageType.LEVEL_2:
         player.space=True
     else:
         player.space=False
@@ -637,14 +641,13 @@ def game():
             running = False
             loseGame=True
         
-        
         pygame.event.pump()
         
         user_input = pygame.key.get_pressed()
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                quitGame()
+                quit_game()
         
                 
         #running 60 FPS
@@ -674,7 +677,6 @@ def game():
         #same code as walls except with the interactives rect instead
         for f in currentLevel.interactive:
             #allows player to be 10 pixels away from the interactive and still be able to interact with it
-            
             if player.rect.y<f.y+30 and player.rect.y+44>f.y:
                 if player.rect.x+44>f.x-10 and player.rect.x<f.x+40:
                     if user_input[pygame.K_e]:#if the user pressed e
@@ -694,7 +696,7 @@ def game():
                     #reset the level and set it 3 levels lower
                     config.sounds["teleport"].play()#play sound effect
                     resetStage(currentLevel)
-                    stage[1]-=3
+                    stage.move_to_above_room()
                     currentLevel = process_current_level(levels)
                     #set the players y and x coord
                     player.rect.y = height-60
@@ -709,7 +711,7 @@ def game():
                     #if the player collides with the teleporter and teleLoop is 0
                     #reset the level and set it 3 levels lower
                     resetStage(currentLevel)
-                    stage[1]+=3
+                    stage.move_to_below_room()
                     currentLevel = process_current_level(levels)
                     #set the players y and x coord
                     player.rect.y = 80
@@ -733,7 +735,6 @@ def game():
         
         #boss jumping and shooting
         for b in currentLevel.boss:
-            
             if player.rect.y<b.y+b.height and player.rect.y+44>b.y and player.hitLoop==0:
                 if player.rect.x+44>b.x and player.rect.x<b.x+b.width:
                     #if the player collides with the boss take 1 health away from the player
@@ -806,28 +807,28 @@ def game():
 
                             
         #what happens when you kill the mini bosses and bosses
-        if stage[0]==1 and stage[1]==2 and len(currentLevel.boss)==0 and loot==False:
+        if stage.get_stage_number() == StageType.LEVEL_1 and stage.get_level_number() == 2 and len(currentLevel.boss) == 0 and loot == False:
             #if you kill the first miniboss
             player.addKey("frag1")#add the key fragment
             txt=True#display relevant text
             player.healthChange(4)#add 4 health
             loot=True#player cannot loot this room unless they exit then reenter the room
             
-        if stage[0]==1 and stage[1]==8 and len(currentLevel.boss)==0 and loot==False:
+        if stage.get_stage_number() == StageType.LEVEL_1 and stage.get_level_number() == 8 and len(currentLevel.boss) == 0 and loot == False:
             #if you kill the first miniboss
             player.addKey("frag2")#add the key fragment
             txt=True#display relevant text
             player.healthChange(4)#add 4 health
             loot=True#player cannot loot this room unless they exit then reenter the room
         
-        if stage[0]==1 and stage[1]==5 and len(currentLevel.boss)==0 and loot==False:
+        if stage.get_stage_number() == StageType.LEVEL_1 and stage.get_level_number() == 5 and len(currentLevel.boss) == 0 and loot == False:
             #if you kill the first boss
             txt=True#display relevant text
             player.healthChange(3)#add 3 health
             loot=True#player cannot loot this room unless they exit then reenter the room
             del currentLevel.interactive[:]#delete the interactive blocks so the player can escape
 
-        if stage[0]==2 and stage[1]==5 and len(currentLevel.boss)==0 and loot==False:
+        if stage.get_stage_number() == StageType.LEVEL_2 and stage.get_level_number() == 5 and len(currentLevel.boss) == 0 and loot == False:
             #if you kill the first boss
             txt=True#display relevant text
             del currentLevel.interactive[:]#delete the interactive blocks so the player can escape
@@ -841,10 +842,10 @@ def game():
   
         if user_input[pygame.K_ESCAPE]:
             #if the user presses the escape button
-            quitGame()
+            quit_game()
         if user_input[pygame.K_s]:
             #if the user presses the s button
-            save_game()
+            save_game_to_file()
             
         #if player wants to shoot
         if user_input[pygame.K_SPACE] and shootLoop==0:
@@ -859,7 +860,6 @@ def game():
                 player.shoot = True#show a different sprite when shooting
             shootLoop = 1#player has shot
             
-
         #player movement
         if not(player.isJump):
             if user_input[pygame.K_UP]:
@@ -873,13 +873,11 @@ def game():
         else:
             if player.jumpCount >= -8:
                 #make the arc for the jump
-                player.move(0,-(player.jumpCount * abs(player.jumpCount)) * 0.7, currentLevel)
+                player.jump(currentLevel)
                 player.jumpCount -= 1
-                
             else: 
                 player.jumpCount = 8
                 player.isJump = False#jump can happen again
-                
         
         if user_input[pygame.K_LEFT]:
             #if the user presses the left key
@@ -890,7 +888,7 @@ def game():
                 #if the player goes off the screen
                 resetStage(currentLevel)#reset level
                 loot=False#loot can happen again in the level
-                stage[1]-=1#go to the stage to the left of the current stage
+                stage.move_to_left_room()
                 currentLevel = process_current_level(levels)#read level
                 player.rect.x = width-44#set the player to be on the right of the screen
             
@@ -901,34 +899,31 @@ def game():
                 resetStage(currentLevel)#reset level contents
                 loot=False#loot can happen again in the level
                 #if the player finishes the tutorial
-                if stage[0]==0 and stage[1]==7:
+                if stage.get_stage_number() == StageType.TUTORIAL and stage.get_level_number() == 7:
                     running=False#stop the game
 
                 #if the player finishes the 1st level
-                elif stage[0]==1 and stage[1]==5:
-                    
-                    stage[0]=2#go to the sencond level stage 1
-                    stage[1]=0
+                elif stage.get_stage_number() == StageType.LEVEL_1 and stage.get_level_number() == 5:
+                    stage.move_onto_next_stage()
                     player.space=True
                     levels = update_current_stage()
                     currentLevel = process_current_level(levels)
                     player.setPos(40,player.rect.y)
                     
-                elif stage[0]==2 and stage[1]==5:
+                elif stage.get_stage_number() == StageType.LEVEL_2 and stage.get_level_number() == 5:
                     #if the player has finished the second level
                     running = False
-                    finishGame()
+                    closing_credits()
                 else:
-                    
-                    stage[1]+=1  #go to the stage to the right of the current stage                  
+                    stage.move_to_right_room()
                     currentLevel = process_current_level(levels)#read level
                     player.rect.x = 2#set the player to be on the left of the screen
                 
-        reset(currentLevel)#reset the screen
+        reset_level(currentLevel)#reset the screen
         pygame.display.flip()
         
     if loseGame == True:#if the player lost the game
-        lose()#execute method
+        lose()
 
 
-intro()#execute the intro         
+show_title_screen()

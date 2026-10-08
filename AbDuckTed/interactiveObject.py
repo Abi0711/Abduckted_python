@@ -1,3 +1,4 @@
+from stageType import StageType
 import config
 import pygame
 
@@ -14,28 +15,28 @@ class Interactive(object):
     def interact(self, interactive, player, stage):
         global txt#access the global variable txt
         
-        if stage[1]==0 and stage [0] ==1 and player.blueKey:#if the player has a blue key and it is the 1st stage in level 1
+        if stage.get_level_number() == 0 and stage.get_stage_number() == StageType.LEVEL_1 and player.blueKey:#if the player has a blue key and it is the 1st stage in level 1
             del interactive[:]#delete the interactive in the room
             txt=True#display relevant text
             player.healthChange(8)#add 8hp to the player
             player.blueKey=False#the player no longer has the blue key
             
-        elif stage[1]==6 and stage[0]==0 and player.blueKey:#if the player has a blue key and it is the 4th stage in the tutorial
+        elif stage.get_level_number() == 6 and stage.get_stage_number() == StageType.TUTORIAL and player.blueKey:#if the player has a blue key and it is the 4th stage in the tutorial
             del interactive[:]#delete the interactive in the room
             txt=True#display relevant text
             player.healthChange(2)#add 2 hp to the player
             player.blueKey=False#the player no longer has the blue key
             
-        elif stage[1]==7 and stage[0]==0:#if the player is in the 8th stage in the tutorial
+        elif stage.get_level_number() == 7 and stage.get_stage_number() == StageType.TUTORIAL:#if the player is in the 8th stage in the tutorial
             del interactive[:]#delete the interactive in the room
             player.addKey("blueKey")#add the blue key to the player
             txt=True
             
-        elif stage[1]==4 and stage[0]==1 and player.bossKey:
+        elif stage.get_level_number() == 4 and stage.get_stage_number() == StageType.LEVEL_1 and player.bossKey:
             del interactive[:]#delete the interactive from the screen
             player.bossKey=False#player no longer has the boss key on them
             
-        elif stage[1]==3 and stage[0]==1:
+        elif stage.get_level_number() == 3 and stage.get_stage_number() == StageType.LEVEL_1:
             del interactive[:]#delete the interactive in the room
             player.addKey("blueKey")#add the blue key to the player
             txt=True#display relevant text

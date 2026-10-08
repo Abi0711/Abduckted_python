@@ -66,7 +66,7 @@ class PlayerSprite(pygame.sprite.Sprite):
             self.blueKey=True#blue key has been obtained
             
     #method that changes the different sprites of the player
-    def change(self):
+    def change_sprite(self):
         #if the player is in space show the sprite that has the helmet on
         if self.space:
             #if it is level 2 the duck will have a space suit on
@@ -98,12 +98,17 @@ class PlayerSprite(pygame.sprite.Sprite):
                     self.image = self.rDuck
         self.image.set_colorkey([255,255,255])
         self.image = pygame.transform.scale(self.image, (44,44))#sets the image to 44x44 pixels
+
+    def jump(self, currentLevel):
+        self.move(0,-(self.jumpCount * abs(self.jumpCount)) * 0.7, currentLevel)
+    
     #method that moves the player 
-    def move(self,dx,dy, currentStage):
+    def move(self,dx,dy, currentLevel):
         if dx!=0:
-            self.move_single_axis(dx,0, currentStage)
+            self.move_single_axis(dx,0, currentLevel)
         if dy!=0:
-            self.move_single_axis(0,dy, currentStage)
+            self.move_single_axis(0,dy, currentLevel)
+        self.change_sprite()
 
     #method that moves the player in a direction with a collision detection for walls, spikes and the interactives
     def move_single_axis(self, dx, dy, level):
